@@ -26751,6 +26751,32 @@
                                 "comment": null,
                                 "items": []
                             }
+                        },
+                        "Event - Belly%": {
+                            "type": "and",
+                            "data": {
+                                "comment": "Belly% Kill - requires REGULAR bombs; cross bombs and power bombs do not work",
+                                "items": [
+                                    {
+                                        "type": "resource",
+                                        "data": {
+                                            "type": "items",
+                                            "name": "Morph",
+                                            "amount": 1,
+                                            "negate": false
+                                        }
+                                    },
+                                    {
+                                        "type": "resource",
+                                        "data": {
+                                            "type": "items",
+                                            "name": "Bomb",
+                                            "amount": 1,
+                                            "negate": false
+                                        }
+                                    }
+                                ]
+                            }
                         }
                     }
                 },
@@ -26889,6 +26915,30 @@
                     },
                     "pickup_index": 148,
                     "major_location": true,
+                    "connections": {
+                        "Right Ledge": {
+                            "type": "and",
+                            "data": {
+                                "comment": null,
+                                "items": []
+                            }
+                        }
+                    }
+                },
+                "Event - Belly%": {
+                    "node_type": "event",
+                    "heal": false,
+                    "coordinates": {
+                        "x": -14386.63,
+                        "y": -5072.62,
+                        "z": 0.0
+                    },
+                    "description": "",
+                    "layers": [
+                        "default"
+                    ],
+                    "extra": {},
+                    "event_name": "Belly%",
                     "connections": {
                         "Right Ledge": {
                             "type": "and",

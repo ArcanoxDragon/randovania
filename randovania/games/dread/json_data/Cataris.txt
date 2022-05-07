@@ -4965,6 +4965,10 @@ Extra - asset_id: collision_camera_063
       Trivial
   > Pickup (Kraid)
       Trivial
+  > Event - Belly%
+      All of the following:
+          # Belly% Kill - requires REGULAR bombs; cross bombs and power bombs do not work
+          Bomb and Morph Ball
 
 > Before Kraid Fight; Heals? False
   * Layers: default
@@ -4989,6 +4993,12 @@ Extra - asset_id: collision_camera_063
   * Pickup 148; Major Location? True
   * Extra - pickup_type: cutscene
   * Extra - callback_function: OnKraidDeath_CUSTOM
+  > Right Ledge
+      Trivial
+
+> Event - Belly%; Heals? False
+  * Layers: default
+  * Event Belly%
   > Right Ledge
       Trivial
 
