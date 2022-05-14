@@ -92,6 +92,13 @@
            </widget>
           </item>
           <item>
+           <widget class="QCheckBox" name="show_debug_logs">
+            <property name="text">
+             <string>Show debug logs</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <layout class="QHBoxLayout" name="show_room_names">
             <item>
              <widget class="QLabel" name="room_names_label">

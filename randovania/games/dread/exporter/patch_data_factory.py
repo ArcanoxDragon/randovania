@@ -337,6 +337,7 @@ class DreadPatchDataFactory(BasePatchDataFactory):
                 "custom_init": {
                     "enable_death_counter": c.show_death_counter,
                     "enable_room_name_display": c.show_room_names.value,
+                    "show_debug_logs": c.show_debug_logs,
                 },
                 "camera_names_dict": self._build_area_name_dict()
             },

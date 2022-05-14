@@ -29,6 +29,7 @@ class DreadCosmeticPatchesDialog(BaseCosmeticPatchesDialog, Ui_DreadCosmeticPatc
         self.show_enemy_damage.stateChanged.connect(self._persist_option_then_notify("show_enemy_damage"))
         self.show_player_damage.stateChanged.connect(self._persist_option_then_notify("show_player_damage"))
         self.show_death_counter.stateChanged.connect(self._persist_option_then_notify("show_death_counter"))
+        self.show_debug_logs.stateChanged.connect(self._persist_option_then_notify("show_debug_logs"))
         self.room_names_dropdown.currentIndexChanged.connect(self._on_room_name_mode_update)
 
     def on_new_cosmetic_patches(self, patches: DreadCosmeticPatches):
@@ -37,6 +38,7 @@ class DreadCosmeticPatchesDialog(BaseCosmeticPatchesDialog, Ui_DreadCosmeticPatc
         self.show_enemy_damage.setChecked(patches.show_enemy_damage)
         self.show_player_damage.setChecked(patches.show_player_damage)
         self.show_death_counter.setChecked(patches.show_death_counter)
+        self.show_debug_logs.setChecked(patches.show_debug_logs)
         self.room_names_dropdown.setCurrentIndex(self.room_names_dropdown.findData(patches.show_room_names))
 
     def _persist_option_then_notify(self, attribute_name: str):
