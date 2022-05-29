@@ -106,13 +106,13 @@ async def _inner_advance_depth(state: State,
         reach = ResolverReach.calculate_reach(logic, state)
 
     debug.log_new_advance(state, reach)
-    status_update("Resolving... {} total resources".format(len(state.resources)))
+    status_update("Resolving... {} total resources".format(state.resources.num_resources))
 
     for action, energy in reach.possible_actions(state):
         if _should_check_if_action_is_safe(state, action, logic.game.dangerous_resources,
                                            logic.game.world_list.all_nodes):
 
-            potential_state = state.act_on_node(action, path=reach.path_to_node[action], new_energy=energy)
+            potential_state = state.act_on_node(action, path=reach.path_to_node(action), new_energy=energy)
             potential_reach = ResolverReach.calculate_reach(logic, potential_state)
 
             # If we can go back to where we were, it's a simple safe node
@@ -134,7 +134,7 @@ async def _inner_advance_depth(state: State,
     has_action = False
     for action, energy in reach.satisfiable_actions(state, logic.game.victory_condition):
         new_result = await _inner_advance_depth(
-            state=state.act_on_node(action, path=reach.path_to_node[action], new_energy=energy),
+            state=state.act_on_node(action, path=reach.path_to_node(action), new_energy=energy),
             logic=logic,
             status_update=status_update,
         )
@@ -185,7 +185,7 @@ async def resolve(configuration: BaseConfiguration,
 
     new_game, starting_state = bootstrap.logic_bootstrap(configuration, game, patches)
     logic = Logic(new_game, configuration)
-    starting_state.resources["add_self_as_requirement_to_resources"] = 1
+    starting_state.resources.add_self_as_requirement_to_resources = True
     debug.log_resolve_start()
 
     return await advance_depth(starting_state, logic, status_update)

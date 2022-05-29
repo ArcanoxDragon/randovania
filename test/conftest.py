@@ -1,3 +1,4 @@
+import asyncio
 import dataclasses
 import json
 import uuid
@@ -12,6 +13,7 @@ from randovania.game_description.item.item_category import ItemCategory
 from randovania.game_description.item.item_database import ItemDatabase
 from randovania.game_description.resources.pickup_entry import PickupEntry, PickupModel
 from randovania.game_description.resources.resource_database import ResourceDatabase
+from randovania.game_description.resources.resource_info import ResourceCollection
 from randovania.games import default_data
 from randovania.games.blank.layout import BlankConfiguration
 from randovania.games.cave_story.layout.cs_configuration import CSConfiguration
@@ -237,7 +239,7 @@ def dataclass_test_lib() -> DataclassTestLib:
 @pytest.fixture()
 def empty_patches(preset_manager) -> GamePatches:
     configuration = preset_manager.default_preset_for_game(RandovaniaGame.BLANK).get_preset().configuration
-    return GamePatches(0, configuration, {}, {}, {}, {}, {}, {}, None, {})
+    return GamePatches(0, configuration, {}, {}, {}, {}, {}, ResourceCollection(), None, {})
 
 
 def pytest_addoption(parser):
@@ -253,13 +255,34 @@ def pytest_addoption(parser):
 
 try:
     import pytestqt
+    import qasync
+    import asyncio.events
+
+    class EventLoopWithRunningFlag(qasync.QEventLoop):
+        def _before_run_forever(self):
+            super()._before_run_forever()
+            asyncio.events._set_running_loop(self)
+
+        def _after_run_forever(self):
+            asyncio.events._set_running_loop(None)
+            super()._after_run_forever()
 
 
     @pytest.fixture()
     def skip_qtbot(request, qtbot):
         if request.config.option.skip_gui_tests:
             pytest.skip()
+
         return qtbot
+
+    @pytest.fixture()
+    def event_loop(qapp, request: pytest.FixtureRequest):
+        if "skip_qtbot" in request.fixturenames:
+            loop = EventLoopWithRunningFlag(qapp, set_running_loop=False)
+        else:
+            loop = asyncio.get_event_loop_policy().new_event_loop()
+        yield loop
+        loop.close()
 
 except ImportError:
     @pytest.fixture()

@@ -6,7 +6,7 @@ from randovania.game_description import migration_data, default_database
 from randovania.games.game import RandovaniaGame
 from randovania.lib import migration_lib
 
-CURRENT_VERSION = 30
+CURRENT_VERSION = 32
 
 
 def _migrate_v1(preset: dict) -> dict:
@@ -614,6 +614,20 @@ def _migrate_v29(preset: dict) -> dict:
     return preset
 
 
+def _migrate_v30(preset: dict) -> dict:
+    if preset["game"] == "dread":
+        for item in ("Metroid Suit", "Hyper Beam", "Power Suit", "Power Beam"):
+            preset["configuration"]["major_items_configuration"]["items_state"].pop(item)
+
+    return preset
+
+
+def _migrate_v31(preset: dict) -> dict:
+    preset["configuration"]["multi_pickup_new_weighting"] = False
+
+    return preset
+
+
 _MIGRATIONS = {
     1: _migrate_v1,  # v1.1.1-247-gaf9e4a69
     2: _migrate_v2,  # v1.2.2-71-g0fbabe91
@@ -644,6 +658,8 @@ _MIGRATIONS = {
     27: _migrate_v27,
     28: _migrate_v28,
     29: _migrate_v29,
+    30: _migrate_v30,
+    31: _migrate_v31,
 }
 
 

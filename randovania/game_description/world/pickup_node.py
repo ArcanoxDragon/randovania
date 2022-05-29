@@ -7,7 +7,7 @@ from randovania.game_description.world.node import NodeContext
 from randovania.game_description.world.resource_node import ResourceNode
 
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass(frozen=True, slots=True)
 class PickupNode(ResourceNode):
     pickup_index: PickupIndex
     major_location: bool
@@ -16,8 +16,7 @@ class PickupNode(ResourceNode):
         return "PickupNode({!r} -> {})".format(self.name, self.pickup_index.index)
 
     def requirement_to_leave(self, context: NodeContext) -> Requirement:
-        # FIXME: using non-resource as key in CurrentResources
-        if context.current_resources.get("add_self_as_requirement_to_resources") == 1:
+        if context.current_resources.add_self_as_requirement_to_resources:
             return ResourceRequirement(self.pickup_index, 1, False)
         else:
             return Requirement.trivial()

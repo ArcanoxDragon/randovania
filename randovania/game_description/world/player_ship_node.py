@@ -17,7 +17,7 @@ def _all_ship_nodes(context: NodeContext) -> typing.Iterator[PlayerShipNode]:
             yield node
 
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass(frozen=True, slots=True)
 class PlayerShipNode(ResourceNode):
     is_unlocked: Requirement
     item_to_summon: ItemResourceInfo
@@ -34,8 +34,8 @@ class PlayerShipNode(ResourceNode):
         :param context:
         :return:
         """
-        current_resources = context.current_resources
-        if current_resources.get(self.item_to_summon, 0) == 0 and current_resources.get(self.resource(context), 0) == 0:
+        resources = context.current_resources
+        if not (resources.has_resource(self.item_to_summon) or resources.has_resource(self.resource(context))):
             return False
 
         return not self.is_collected(context)

@@ -5,7 +5,7 @@ from randovania.game_description.game_patches import GamePatches
 from randovania.game_description.requirements import Requirement
 from randovania.game_description.resources.pickup_index import PickupIndex
 from randovania.game_description.resources.resource_database import ResourceDatabase
-from randovania.game_description.resources.resource_info import CurrentResources
+from randovania.game_description.resources.resource_info import ResourceCollection
 from randovania.game_description.world.area import Area
 from randovania.game_description.world.area_identifier import AreaIdentifier
 from randovania.game_description.world.dock_node import DockNode
@@ -24,6 +24,7 @@ class WorldList(NodeProvider):
     _nodes_to_world: Dict[Node, World]
     _nodes: Optional[Tuple[Node, ...]]
     _pickup_index_to_node: Dict[PickupIndex, PickupNode]
+    _identifier_to_node: Dict[NodeIdentifier, Node]
 
     def __deepcopy__(self, memodict):
         return WorldList(
@@ -32,7 +33,7 @@ class WorldList(NodeProvider):
 
     def __init__(self, worlds: List[World]):
         self.worlds = worlds
-        self._nodes = None
+        self.invalidate_node_cache()
 
     def _refresh_node_cache(self):
         self._nodes_to_area, self._nodes_to_world = _calculate_nodes_to_area_world(self.worlds)
@@ -53,6 +54,7 @@ class WorldList(NodeProvider):
 
     def invalidate_node_cache(self):
         self._nodes = None
+        self._identifier_to_node = {}
 
     def _iterate_over_nodes(self) -> Iterator[Node]:
         for world in self.worlds:
@@ -163,7 +165,7 @@ class WorldList(NodeProvider):
         yield from node.connections_from(context)
         yield from self.area_connections_from(node)
 
-    def patch_requirements(self, static_resources: CurrentResources, damage_multiplier: float,
+    def patch_requirements(self, static_resources: ResourceCollection, damage_multiplier: float,
                            database: ResourceDatabase) -> None:
         """
         Patches all Node connections, assuming the given resources will never change their quantity.
@@ -176,23 +178,29 @@ class WorldList(NodeProvider):
         """
         for world in self.worlds:
             for area in world.areas:
-                for node in area.nodes:
-                    if isinstance(node, DockNode):
-                        requirement = node.default_dock_weakness.requirement
-                        object.__setattr__(node.default_dock_weakness, "requirement",
-                                           requirement.patch_requirements(static_resources,
-                                                                          damage_multiplier,
-                                                                          database).simplify())
+                # for node in area.nodes:
+                #     if isinstance(node, DockNode):
+                #         requirement = node.default_dock_weakness.requirement
+                #         object.__setattr__(node.default_dock_weakness, "requirement",
+                #                            requirement.patch_requirements(static_resources,
+                #                                                           damage_multiplier,
+                #                                                           database).simplify())
                 for connections in area.connections.values():
                     for target, value in connections.items():
                         connections[target] = value.patch_requirements(
                             static_resources, damage_multiplier, database).simplify()
 
     def node_by_identifier(self, identifier: NodeIdentifier) -> Node:
+        cache_result = self._identifier_to_node.get(identifier)
+        if cache_result is not None:
+            return cache_result
+
         area = self.area_by_area_location(identifier.area_location)
         node = area.node_with_name(identifier.node_name)
         if node is not None:
+            self._identifier_to_node[identifier] = node
             return node
+
         raise ValueError(f"No node with name {identifier.node_name} found in {area}")
 
     def area_by_area_location(self, location: AreaIdentifier) -> Area:

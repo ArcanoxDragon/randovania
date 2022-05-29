@@ -2,9 +2,6 @@ import logging
 import os
 from typing import Optional, Union
 
-from open_dread_rando.version import version as open_dread_rando_version
-
-from randovania import VERSION
 from randovania.exporter import pickup_exporter, item_names
 from randovania.exporter.hints.hint_exporter import HintExporter
 from randovania.exporter.patch_data_factory import BasePatchDataFactory
@@ -12,7 +9,7 @@ from randovania.exporter.pickup_exporter import ExportedPickupDetails
 from randovania.game_description.assignment import PickupTarget
 from randovania.game_description.resources.item_resource_info import ItemResourceInfo
 from randovania.game_description.resources.pickup_entry import ConditionalResources
-from randovania.game_description.resources.resource_info import CurrentResources
+from randovania.game_description.resources.resource_info import ResourceCollection
 from randovania.game_description.world.area_identifier import AreaIdentifier
 from randovania.game_description.world.logbook_node import LogbookNode
 from randovania.game_description.world.node import Node
@@ -54,16 +51,18 @@ class DreadPatchDataFactory(BasePatchDataFactory):
         super().__init__(*args, **kwargs)
         self.memo_data = DreadAcquiredMemo.with_expansion_text()
 
-        self.memo_data["Energy Tank"] = f"Energy Tank acquired.\nEnergy capacity increased by {self.configuration.energy_per_tank:g}."
+        self.memo_data[
+            "Energy Tank"] = f"Energy Tank acquired.\nEnergy capacity increased by {self.configuration.energy_per_tank:g}."
         if self.configuration.immediate_energy_parts:
-            self.memo_data["Energy Part"] = f"Energy Part acquired.\nEnergy capacity increased by {self.configuration.energy_per_tank/4:g}."
+            self.memo_data[
+                "Energy Part"] = f"Energy Part acquired.\nEnergy capacity increased by {self.configuration.energy_per_tank / 4:g}."
 
     def game_enum(self) -> RandovaniaGame:
         return RandovaniaGame.METROID_DREAD
 
-    def _calculate_starting_inventory(self, resources: CurrentResources):
+    def _calculate_starting_inventory(self, resources: ResourceCollection):
         result = {}
-        for resource, quantity in resources.items():
+        for resource, quantity in resources.as_resource_gain():
             try:
                 result[_get_item_id_for_item(resource)] = quantity
             except KeyError:
@@ -71,7 +70,7 @@ class DreadPatchDataFactory(BasePatchDataFactory):
                 continue
         return result
 
-    def _starting_inventory_text(self, resources: CurrentResources):
+    def _starting_inventory_text(self, resources: ResourceCollection):
         result = [r"{c1}Random starting items:{c0}"]
         items = item_names.additional_starting_items(self.configuration, self.game.resource_database, resources)
         if not items:
@@ -241,12 +240,21 @@ class DreadPatchDataFactory(BasePatchDataFactory):
             text[difficulty] = full_hash
 
         text["GUI_COMPANY_TITLE_SCREEN"] = "|".join([
-            f"Randovania {VERSION} - open-dread-rando {open_dread_rando_version}",
+            "<versions>",
             full_hash
         ])
 
+        # Warning message for continuing a non-rando game file
+        text["GUI_WARNING_NOT_RANDO_GAME_1"] = "|".join([
+            r"{c2}Error!{c0}",
+            "This save slot was created using a different Randomizer mod.",
+        ])
+        text["GUI_WARNING_NOT_RANDO_GAME_2"] = "|".join([
+            "You must start a New Game from a blank save slot. Returning to title screen.",
+        ])
+
         return text
-    
+
     def _cosmetic_patch_data(self) -> dict:
         c = self.cosmetic_patches
         return {
@@ -301,7 +309,10 @@ class DreadPatchDataFactory(BasePatchDataFactory):
             visual_etm=pickup_creator.create_visual_etm(),
         )
 
+        energy_per_tank = self.configuration.energy_per_tank if self.configuration.immediate_energy_parts else 100.0
+
         return {
+            "configuration_identifier": self.description.shareable_hash,
             "starting_location": starting_location,
             "starting_items": starting_items,
             "starting_text": starting_text,
@@ -320,6 +331,7 @@ class DreadPatchDataFactory(BasePatchDataFactory):
             "hints": self._encode_hints(),
             "text_patches": self._static_text_changes(),
             "cosmetic_patches": self._cosmetic_patch_data(),
+            "energy_per_tank": energy_per_tank,
             "immediate_energy_parts": self.configuration.immediate_energy_parts,
             "game_patches": {
                 "consistent_raven_beak_damage_table": True,
