@@ -6,8 +6,12 @@ from typing import List, TypeVar, Callable, Dict, Tuple, Iterator, Optional
 
 from randovania.game_description import game_migration
 from randovania.game_description.game_description import GameDescription, MinimalLogicData
-from randovania.game_description.requirements import ResourceRequirement, \
-    RequirementOr, RequirementAnd, Requirement, RequirementTemplate, RequirementArrayBase
+from randovania.game_description.requirements.requirement_template import RequirementTemplate
+from randovania.game_description.requirements.resource_requirement import ResourceRequirement
+from randovania.game_description.requirements.requirement_or import RequirementOr
+from randovania.game_description.requirements.requirement_and import RequirementAnd
+from randovania.game_description.requirements.array_base import RequirementArrayBase
+from randovania.game_description.requirements.base import Requirement
 from randovania.game_description.resources.item_resource_info import ItemResourceInfo
 from randovania.game_description.resources.resource_database import ResourceDatabase
 from randovania.game_description.resources.resource_info import ResourceInfo, ResourceGainTuple, ResourceGain
@@ -318,12 +322,14 @@ def write_area(area: Area) -> dict:
 
     nodes = {}
     for node in area.nodes:
+        if node.is_derived_node:
+            continue
         try:
             data = write_node(node)
             data["connections"] = {
                 target_node.name: write_requirement(area.connections[node][target_node])
                 for target_node in area.nodes
-                if target_node in area.connections[node]
+                if not target_node.is_derived_node and target_node in area.connections[node]
             }
             nodes[node.name] = data
         except ValueError as e:

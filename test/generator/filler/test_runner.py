@@ -28,7 +28,7 @@ async def test_run_filler(echoes_game_description,
     status_update = MagicMock()
 
     hint_identifiers = [echoes_game_description.world_list.identifier_for_node(node)
-                        for node in echoes_game_description.world_list.all_nodes if isinstance(node, LogbookNode)]
+                        for node in echoes_game_description.world_list.iterate_nodes() if isinstance(node, LogbookNode)]
 
     player_pools = [
         await create_player_pool(rng, default_echoes_configuration, 0, 1),
@@ -67,7 +67,7 @@ async def test_run_filler(echoes_game_description,
 def test_fill_unassigned_hints_empty_assignment(echoes_game_description, echoes_game_patches):
     # Setup
     rng = Random(5000)
-    expected_logbooks = sum(1 for node in echoes_game_description.world_list.all_nodes
+    expected_logbooks = sum(1 for node in echoes_game_description.world_list.iterate_nodes()
                             if isinstance(node, LogbookNode))
     hint_distributor = echoes_game_description.game.generator.hint_distributor
 
@@ -139,15 +139,15 @@ def _make_pickup(item_category: ItemCategory):
 @pytest.mark.parametrize("precise_distance", [False, True])
 @pytest.mark.parametrize("location_precision", [HintLocationPrecision.RELATIVE_TO_AREA,
                                                 HintLocationPrecision.RELATIVE_TO_INDEX])
-def test_add_relative_hint(echoes_game_description, empty_patches, precise_distance, location_precision,
+def test_add_relative_hint(echoes_game_description, echoes_game_patches, precise_distance, location_precision,
                            echoes_item_database):
     # Setup
     rng = Random(5000)
     target_precision = MagicMock(spec=HintItemPrecision)
     precision = MagicMock(spec=HintItemPrecision)
-    patches = empty_patches.assign_pickup_assignment({
-        PickupIndex(8): PickupTarget(_make_pickup(echoes_item_database.item_categories["movement"]), 0),
-    })
+    patches = echoes_game_patches.assign_new_pickups([
+        (PickupIndex(8), PickupTarget(_make_pickup(echoes_item_database.item_categories["movement"]), 0)),
+    ])
     hint_distributor = EchoesHintDistributor()
 
     if location_precision == HintLocationPrecision.RELATIVE_TO_AREA:

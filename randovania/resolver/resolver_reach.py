@@ -4,8 +4,10 @@ from collections import defaultdict
 from typing import Dict, Set, Iterator, Tuple, FrozenSet
 
 from randovania.game_description.game_description import calculate_interesting_resources
-from randovania.game_description.requirements import RequirementList, RequirementSet, SatisfiableRequirements, \
-    RequirementAnd, Requirement
+from randovania.game_description.requirements.requirement_set import RequirementSet
+from randovania.game_description.requirements.requirement_list import RequirementList, SatisfiableRequirements
+from randovania.game_description.requirements.requirement_and import RequirementAnd
+from randovania.game_description.requirements.base import Requirement
 from randovania.game_description.world.node import Node
 from randovania.game_description.world.resource_node import ResourceNode
 from randovania.resolver import debug
@@ -34,7 +36,7 @@ class ResolverReach:
         all_nodes = self._logic.game.world_list.all_nodes
         return tuple(
             all_nodes[part]
-            for part in self._path_to_node[node.get_index()]
+            for part in self._path_to_node[node.node_index]
         )
 
     @property
@@ -65,14 +67,14 @@ class ResolverReach:
         # Keys: nodes to check
         # Value: how much energy was available when visiting that node
         nodes_to_check: Dict[int, int] = {
-            initial_state.node.get_index(): initial_state.energy
+            initial_state.node.node_index: initial_state.energy
         }
 
         reach_nodes: Dict[int, int] = {}
         requirements_by_node: Dict[int, Set[RequirementList]] = defaultdict(set)
 
         path_to_node: dict[int, list[int]] = {
-            initial_state.node.get_index(): [],
+            initial_state.node.node_index: [],
         }
 
         while nodes_to_check:
@@ -84,16 +86,13 @@ class ResolverReach:
                 energy = initial_state.maximum_energy
 
             checked_nodes[node_index] = energy
-            if node_index != initial_state.node.get_index():
+            if node_index != initial_state.node.node_index:
                 reach_nodes[node_index] = energy
 
             requirement_to_leave = node.requirement_to_leave(context)
 
             for target_node, requirement in logic.game.world_list.potential_nodes_from(node, context):
-                if target_node is None:
-                    continue
-
-                target_node_index = target_node.get_index()
+                target_node_index = target_node.node_index
 
                 if checked_nodes.get(target_node_index, math.inf) <= energy or nodes_to_check.get(target_node_index,
                                                                                             math.inf) <= energy:
@@ -141,7 +140,7 @@ class ResolverReach:
 
         for node in self.collectable_resource_nodes(state):
             additional_requirements = self._logic.get_additional_requirements(node)
-            energy = self._energy_at_node[node.get_index()]
+            energy = self._energy_at_node[node.node_index]
             if additional_requirements.satisfied(state.resources, energy, state.resource_database):
                 yield node, energy
             else:

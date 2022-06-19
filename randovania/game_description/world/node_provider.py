@@ -4,9 +4,10 @@ from typing import Iterator, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from randovania.game_description.game_patches import GamePatches
-    from randovania.game_description.requirements import Requirement
+    from randovania.game_description.requirements.base import Requirement
     from randovania.game_description.world.area import Area
     from randovania.game_description.world.area_identifier import AreaIdentifier
+    from randovania.game_description.world.dock import DockWeakness
     from randovania.game_description.world.node import Node
     from randovania.game_description.world.node_identifier import NodeIdentifier
     from randovania.game_description.world.world import World
@@ -32,8 +33,7 @@ class NodeProvider:
     def all_areas(self) -> Iterator[Area]:
         raise NotImplementedError()
 
-    @property
-    def all_nodes(self) -> tuple[Node, ...]:
+    def iterate_nodes(self) -> tuple[Node, ...]:
         raise NotImplementedError()
 
     def nodes_to_world(self, node: Node) -> World:
@@ -85,3 +85,9 @@ class NodeProvider:
             raise IndexError("Area '{}' default_node ({}) is missing".format(area.name, area.default_node))
 
         return node
+
+    def open_requirement_for(self, weakness: DockWeakness) -> Requirement:
+        return weakness.requirement
+
+    def lock_requirement_for(self, weakness: DockWeakness) -> Requirement:
+        return weakness.lock.requirement

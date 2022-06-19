@@ -2,7 +2,9 @@ import itertools
 from typing import FrozenSet, List, Tuple, Set
 
 from randovania.game_description import game_description
-from randovania.game_description.requirements import RequirementList, ResourceRequirement, RequirementSet
+from randovania.game_description.requirements.requirement_set import RequirementSet
+from randovania.game_description.requirements.requirement_list import RequirementList
+from randovania.game_description.requirements.resource_requirement import ResourceRequirement
 from randovania.game_description.resources.pickup_entry import PickupEntry
 from randovania.game_description.resources.resource_info import ResourceInfo, ResourceCollection
 from randovania.game_description.resources.resource_type import ResourceType
@@ -35,12 +37,12 @@ def interesting_resources_for_reach(reach: GeneratorReach) -> FrozenSet[Resource
 
 def _unsatisfied_item_requirements_in_list(alternative: RequirementList,
                                            state: State,
-                                           uncollected_resources: List[ResourceInfo]):
+                                           uncollected_resources: set[ResourceInfo]):
     possible = True
     items = []
     damage = []
 
-    for individual in alternative.items:
+    for individual in alternative.values():
         if individual.negate:
             possible = False
             break
@@ -65,7 +67,7 @@ def _unsatisfied_item_requirements_in_list(alternative: RequirementList,
     sum_damage = sum(req.damage(state.resources, state.resource_database) for req in damage)
     if state.energy < sum_damage:
         tank_count = (sum_damage - state.energy) // state.game_data.energy_per_tank
-        yield items + [ResourceRequirement(state.resource_database.energy_tank, tank_count + 1, False)]
+        yield items + [ResourceRequirement.create(state.resource_database.energy_tank, tank_count + 1, False)]
         # FIXME: get the required items for reductions (aka suits)
     else:
         yield items
@@ -73,7 +75,7 @@ def _unsatisfied_item_requirements_in_list(alternative: RequirementList,
 
 def _requirement_lists_without_satisfied_resources(state: State,
                                                    possible_sets: List[RequirementSet],
-                                                   uncollected_resources: List[ResourceInfo],
+                                                   uncollected_resources: set[ResourceInfo],
                                                    ) -> Set[RequirementList]:
     seen_lists = set()
     result = set()
@@ -106,6 +108,7 @@ def pickups_to_solve_list(pickup_pool: list[PickupEntry],
                           state: State):
     pickups = []
 
+    db = state.resource_database
     resources = state.resources.duplicate()
     pickups_for_this = list(pickup_pool)
 
@@ -122,8 +125,8 @@ def pickups_to_solve_list(pickup_pool: list[PickupEntry],
 
         # Create another copy of the list so we can remove elements while iterating
         for pickup in list(pickups_for_this):
-            new_resources = ResourceCollection.from_resource_gain(pickup.resource_gain(resources, force_lock=True))
-            pickup_progression = ResourceCollection.from_resource_gain(pickup.progression)
+            new_resources = ResourceCollection.from_resource_gain(db, pickup.resource_gain(resources, force_lock=True))
+            pickup_progression = ResourceCollection.from_resource_gain(db, pickup.progression)
             if new_resources[individual.resource] + pickup_progression[individual.resource] > 0:
                 pickups.append(pickup)
                 pickups_for_this.remove(pickup)
@@ -147,7 +150,11 @@ def get_pickups_that_solves_unreachable(pickups_left: List[PickupEntry],
     state = reach.state
     possible_sets = list(reach.unreachable_nodes_with_requirements().values())
     context = reach.node_context()
-    uncollected_resources = [node.resource(context) for node in uncollected_resource_nodes]
+
+    uncollected_resources = set()
+    for node in uncollected_resource_nodes:
+        for resource, _ in node.resource_gain_on_collect(context):
+            uncollected_resources.add(resource)
 
     all_lists = _requirement_lists_without_satisfied_resources(state, possible_sets, uncollected_resources)
 

@@ -2,7 +2,10 @@ import copy
 from typing import Iterator, Optional, Set, Dict, List, NamedTuple, Tuple
 
 from randovania.game_description.game_description import GameDescription
-from randovania.game_description.requirements import RequirementSet, Requirement, ResourceRequirement, RequirementAnd
+from randovania.game_description.requirements.requirement_set import RequirementSet
+from randovania.game_description.requirements.resource_requirement import ResourceRequirement
+from randovania.game_description.requirements.requirement_and import RequirementAnd
+from randovania.game_description.requirements.base import Requirement
 from randovania.game_description.world.node import Node, NodeContext
 from randovania.game_description.world.resource_node import ResourceNode
 from randovania.generator import graph as graph_module
@@ -15,9 +18,13 @@ def _extra_requirement_for_node(game: GameDescription, context: NodeContext, nod
 
     if node.is_resource_node:
         assert isinstance(node, ResourceNode)
-        node_resource = node.resource(context)
-        if node_resource in game.dangerous_resources:
-            extra_requirement = ResourceRequirement(node_resource, 1, False)
+        dangerous_extra = [
+            ResourceRequirement.simple(resource)
+            for resource, quantity in node.resource_gain_on_collect(context)
+            if resource in game.dangerous_resources
+        ]
+        if dangerous_extra:
+            extra_requirement = RequirementAnd(dangerous_extra)
 
     return extra_requirement
 
@@ -31,12 +38,12 @@ class GraphPath(NamedTuple):
         if self.previous_node is None:
             return False
         else:
-            return digraph.has_edge(self.previous_node.get_index(), self.node.get_index())
+            return digraph.has_edge(self.previous_node.node_index, self.node.node_index)
 
     def add_to_graph(self, digraph: graph_module.BaseGraph):
-        digraph.add_node(self.node.get_index())
+        digraph.add_node(self.node.node_index)
         if self.previous_node is not None:
-            digraph.add_edge(self.previous_node.get_index(), self.node.get_index(), requirement=self.requirement)
+            digraph.add_edge(self.previous_node.node_index, self.node.node_index, requirement=self.requirement)
 
 
 class OldGeneratorReach(GeneratorReach):
@@ -126,7 +133,7 @@ class OldGeneratorReach(GeneratorReach):
                 else:
                     # print("* Unreachable", self.game.world_list.node_name(target_node), ", missing:",
                     #       requirement.as_str)
-                    self._unreachable_paths[path.node.get_index(), target_node.get_index()] = requirement
+                    self._unreachable_paths[path.node.node_index, target_node.node_index] = requirement
             # print("> done")
 
         # print("!! _expand_graph finished. Has {} edges".format(sum(1 for _ in self._digraph.edges_data())))
@@ -152,7 +159,7 @@ class OldGeneratorReach(GeneratorReach):
             return
 
         for component in self._digraph.strongly_connected_components():
-            if self._state.node.get_index() in component:
+            if self._state.node.node_index in component:
                 assert self._safe_nodes is None
                 self._safe_nodes = component
 
@@ -170,11 +177,13 @@ class OldGeneratorReach(GeneratorReach):
             else:
                 return 1
 
-        self._reachable_costs, self._reachable_paths = self._digraph.multi_source_dijkstra({self.state.node.get_index()},
-                                                                                           weight=weight)
+        self._reachable_costs, self._reachable_paths = self._digraph.multi_source_dijkstra(
+            {self.state.node.node_index},
+            weight=weight,
+        )
 
     def is_reachable_node(self, node: Node) -> bool:
-        index = node.get_index()
+        index = node.node_index
 
         cached_value = self._node_reachable_cache.get(index)
         if cached_value is not None:
@@ -215,13 +224,13 @@ class OldGeneratorReach(GeneratorReach):
         return self._game
 
     @property
-    def all_nodes(self) -> Tuple[Node, ...]:
+    def all_nodes(self) -> tuple[Optional[Node], ...]:
         return self.game.world_list.all_nodes
 
     @property
     def nodes(self) -> Iterator[Node]:
-        for node in self.all_nodes:
-            if node.get_index() in self._digraph:
+        for node in self.iterate_nodes:
+            if node.node_index in self._digraph:
                 yield node
 
     @property
@@ -231,7 +240,7 @@ class OldGeneratorReach(GeneratorReach):
                 yield node
 
     def is_safe_node(self, node: Node) -> bool:
-        node_index = node.get_index()
+        node_index = node.node_index
         is_safe = self._is_node_safe_cache.get(node_index)
         if is_safe is not None:
             return is_safe
@@ -252,7 +261,7 @@ class OldGeneratorReach(GeneratorReach):
                 del self._node_reachable_cache[index]
 
             for node_index in [node_index for node_index, flag in self._is_node_safe_cache.items()
-                         if not flag]:
+                               if not flag]:
                 del self._is_node_safe_cache[node_index]
         else:
             self._node_reachable_cache = {}
@@ -278,7 +287,6 @@ class OldGeneratorReach(GeneratorReach):
         self._expand_graph(paths_to_check)
 
     def act_on(self, node: ResourceNode) -> None:
-        all_nodes = self.all_nodes
         new_dangerous_resources = set(
             resource
             for resource, quantity in node.resource_gain_on_collect(self.state.node_context())

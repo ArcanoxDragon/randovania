@@ -1,9 +1,9 @@
 import asyncio
 from typing import Optional, Tuple, Callable, FrozenSet
 
-from randovania.game_description import derived_nodes
 from randovania.game_description.game_patches import GamePatches
-from randovania.game_description.requirements import RequirementSet, RequirementList
+from randovania.game_description.requirements.requirement_set import RequirementSet
+from randovania.game_description.requirements.requirement_list import RequirementList
 from randovania.game_description.resources.resource_info import ResourceInfo
 from randovania.game_description.world.event_node import EventNode
 from randovania.game_description.world.node import Node
@@ -11,8 +11,9 @@ from randovania.game_description.world.pickup_node import PickupNode
 from randovania.game_description.world.resource_node import ResourceNode
 from randovania.layout import filtered_database
 from randovania.layout.base.base_configuration import BaseConfiguration
-from randovania.resolver import debug, event_pickup
-from randovania.resolver.event_pickup import EventPickupNode
+from randovania.resolver import debug
+from randovania.game_description.world import event_pickup
+from randovania.game_description.world.event_pickup import EventPickupNode
 from randovania.resolver.logic import Logic
 from randovania.resolver.resolver_reach import ResolverReach
 from randovania.resolver.state import State
@@ -132,7 +133,7 @@ async def _inner_advance_depth(state: State,
 
     for action, energy in reach.possible_actions(state):
         if _should_check_if_action_is_safe(state, action, logic.game.dangerous_resources,
-                                           logic.game.world_list.all_nodes):
+                                           logic.game.world_list.iterate_nodes()):
             potential_state = state.act_on_node(action, path=reach.path_to_node(action), new_energy=energy)
             potential_reach = ResolverReach.calculate_reach(logic, potential_state)
 
@@ -178,9 +179,12 @@ async def _inner_advance_depth(state: State,
 
         additional_requirements = additional_requirements.union(RequirementSet(additional))
 
-    logic.additional_requirements[state.node] = _simplify_additional_requirement_set(additional_requirements,
-                                                                                     state,
-                                                                                     logic.game.dangerous_resources)
+    logic.set_additional_requirements(
+        state.node,
+        _simplify_additional_requirement_set(additional_requirements,
+                                             state,
+                                             logic.game.dangerous_resources)
+    )
     return None, has_action
 
 
@@ -191,22 +195,21 @@ async def advance_depth(state: State, logic: Logic, status_update: Callable[[str
 def _quiet_print(s):
     pass
 
+
 def setup_resolver(configuration: BaseConfiguration, patches: GamePatches) -> Tuple[State, Logic]:
     set_attempts(0)
 
     game = filtered_database.game_description_for_layout(configuration).get_mutable()
     bootstrap = game.game.generator.bootstrap
-    derived_nodes.create_derived_nodes(game)
-    
 
     game.resource_database = bootstrap.patch_resource_database(game.resource_database, configuration)
-    event_pickup.replace_with_event_pickups(game)
 
     new_game, starting_state = bootstrap.logic_bootstrap(configuration, game, patches)
     logic = Logic(new_game, configuration)
     starting_state.resources.add_self_as_requirement_to_resources = True
 
     return starting_state, logic
+
 
 async def resolve(configuration: BaseConfiguration,
                   patches: GamePatches,

@@ -4,7 +4,7 @@ import pytest
 
 from randovania.game_description import data_reader
 from randovania.game_description.editor import Editor
-from randovania.game_description.requirements import Requirement
+from randovania.game_description.requirements.base import Requirement
 from randovania.game_description.world.area_identifier import AreaIdentifier
 from randovania.game_description.world.dock_node import DockNode
 
@@ -53,6 +53,7 @@ def test_replace_node(game_editor):
     landing_site = world_list.area_by_area_location(loc)
     source = landing_site.node_with_name("Save Station")
     door = landing_site.node_with_name("Door to Service Access")
+    assert isinstance(door, DockNode)
     req = landing_site.connections[source][door]
 
     new_node = dataclasses.replace(door, identifier=door.identifier.renamed("FooBar"))

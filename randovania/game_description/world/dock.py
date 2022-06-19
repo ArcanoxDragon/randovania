@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import dataclasses
 from dataclasses import dataclass
 from enum import unique, Enum
 from typing import Iterator, Optional
 
 from frozendict import frozendict
 
-from randovania.game_description.requirements import Requirement
+from randovania.game_description.requirements.base import Requirement
 
 
 @unique
@@ -54,6 +55,7 @@ class DockWeakness:
     The requirements for the weakness is required for every single use, but
     only from the front. The lock's requirement (if a lock is present) only needs to be satisfied once.
     """
+    weakness_index: int = dataclasses.field(compare=False)
     name: str
     extra: frozendict
     requirement: Requirement

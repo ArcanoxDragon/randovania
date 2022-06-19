@@ -3,9 +3,11 @@ from pathlib import Path
 from typing import Iterator, Tuple, TextIO
 
 from randovania.game_description.game_description import GameDescription
-from randovania.game_description.requirements import (
-    ResourceRequirement, RequirementOr, RequirementTemplate, Requirement, RequirementArrayBase
-)
+from randovania.game_description.requirements.requirement_template import RequirementTemplate
+from randovania.game_description.requirements.resource_requirement import ResourceRequirement
+from randovania.game_description.requirements.requirement_or import RequirementOr
+from randovania.game_description.requirements.array_base import RequirementArrayBase
+from randovania.game_description.requirements.base import Requirement
 from randovania.game_description.resources.resource_type import ResourceType
 from randovania.game_description.world.area import Area
 from randovania.game_description.world.node import (
@@ -129,7 +131,11 @@ def pretty_print_area(game: GameDescription, area: Area, print_function=print):
         print_function("(Valid Starting Location)")
     for extra_name, extra_field in area.extra.items():
         print_function("Extra - {}: {}".format(extra_name, extra_field))
+
     for i, node in enumerate(area.nodes):
+        if node.is_derived_node:
+            continue
+
         message = f"> {node.name}; Heals? {node.heal}"
         if area.default_node == node.name:
             message += "; Spawn Point"
@@ -145,6 +151,9 @@ def pretty_print_area(game: GameDescription, area: Area, print_function=print):
             print_function("  * Extra - {}: {}".format(extra_name, extra_field))
 
         for target_node, requirement in game.world_list.area_connections_from(node):
+            if target_node.is_derived_node:
+                continue
+
             print_function("  > {}".format(target_node.name))
             for level, text in pretty_print_requirement(requirement.simplify(keep_comments=True)):
                 print_function("      {}{}".format("    " * level, text))

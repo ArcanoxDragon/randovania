@@ -1,7 +1,7 @@
 from typing import Iterator, Dict, Tuple
 
 from randovania.game_description.game_description import GameDescription
-from randovania.game_description.requirements import RequirementSet
+from randovania.game_description.requirements.requirement_set import RequirementSet
 from randovania.game_description.world.node import Node, NodeContext
 from randovania.game_description.world.resource_node import ResourceNode
 from randovania.resolver.state import State
@@ -26,8 +26,8 @@ class GeneratorReach:
                                                      self.state.resource_database)
 
     @property
-    def all_nodes(self) -> Tuple[Node, ...]:
-        return self.game.world_list.all_nodes
+    def iterate_nodes(self) -> Iterator[Node]:
+        yield from self.game.world_list.iterate_nodes()
 
     # ASDF
 

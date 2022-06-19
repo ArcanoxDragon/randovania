@@ -930,6 +930,10 @@
                 "long_name": "Burenia - Early Gravity Energy Part",
                 "extra": {}
             },
+            "ArtariaThermalItemDoor": {
+                "long_name": "Artaria - Open Thermal Device Item Door",
+                "extra": {}
+            },
             "Belly%": {
                 "long_name": "Belly%",
                 "extra": {}
@@ -1013,6 +1017,11 @@
             },
             "DBoost": {
                 "long_name": "Damage Boost",
+                "description": "",
+                "extra": {}
+            },
+            "FrozenEnemy": {
+                "long_name": "Stand on Frozen Enemy",
                 "description": "",
                 "extra": {}
             }
@@ -1948,6 +1957,39 @@
                         }
                     ]
                 }
+            },
+            "Open Charge Door": {
+                "type": "or",
+                "data": {
+                    "comment": null,
+                    "items": [
+                        {
+                            "type": "template",
+                            "data": "Shoot Charge Beam"
+                        },
+                        {
+                            "type": "and",
+                            "data": {
+                                "comment": null,
+                                "items": [
+                                    {
+                                        "type": "template",
+                                        "data": "Lay Power Bomb"
+                                    },
+                                    {
+                                        "type": "resource",
+                                        "data": {
+                                            "type": "tricks",
+                                            "name": "Knowledge",
+                                            "amount": 1,
+                                            "negate": false
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
             }
         },
         "damage_reductions": [
@@ -2271,6 +2313,19 @@
                             "data": {
                                 "type": "events",
                                 "name": "s010_cave:default:PRP_CV_ThermalDevice",
+                                "amount": 1,
+                                "negate": false
+                            }
+                        },
+                        "lock": null
+                    },
+                    "Cataris Thermal Door": {
+                        "extra": {},
+                        "requirement": {
+                            "type": "resource",
+                            "data": {
+                                "type": "events",
+                                "name": "s020_magma:default:deviceheat_002",
                                 "amount": 1,
                                 "negate": false
                             }

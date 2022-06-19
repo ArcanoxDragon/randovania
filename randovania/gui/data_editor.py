@@ -13,13 +13,13 @@ from randovania.game_description import data_reader, data_writer, pretty_print, 
     derived_nodes, default_database
 from randovania.game_description.editor import Editor
 from randovania.game_description.game_description import GameDescription
-from randovania.game_description.requirements import Requirement
+from randovania.game_description.requirements.base import Requirement
 from randovania.game_description.resources.resource_info import ResourceInfo, ResourceCollection
 from randovania.game_description.resources.resource_type import ResourceType
 from randovania.game_description.world.area import Area
 from randovania.game_description.world.dock_node import DockNode
 from randovania.game_description.world.event_node import EventNode
-from randovania.game_description.world.node import Node, GenericNode, NodeLocation
+from randovania.game_description.world.node import Node, GenericNode, NodeLocation, NodeIndex
 from randovania.game_description.world.node_identifier import NodeIdentifier
 from randovania.game_description.world.teleporter_node import TeleporterNode
 from randovania.game_description.world.world import World
@@ -52,6 +52,7 @@ class DataEditorWindow(QMainWindow, Ui_DataEditorWindow):
     _connections_visualizer: Optional[ConnectionsVisualizer] = None
     _edit_popup: Optional[QDialog] = None
     _warning_dialogs_disabled = False
+    _collection_for_filtering: Optional[ResourceCollection] = None
 
     def __init__(self, data: dict, data_path: Optional[Path], is_internal: bool, edit_mode: bool):
         super().__init__()
@@ -255,6 +256,9 @@ class DataEditorWindow(QMainWindow, Ui_DataEditorWindow):
 
         is_first = True
         for node in sorted(current_area.nodes, key=lambda x: x.name):
+            if node.is_derived_node:
+                continue
+
             button = QRadioButton(self.nodes_scroll_contents)
             button.setText(node.name)
             self.radio_button_to_node[button] = node
@@ -462,7 +466,7 @@ class DataEditorWindow(QMainWindow, Ui_DataEditorWindow):
             self.other_node_connection_combo.clear()
 
         for node in sorted(self.current_area.nodes, key=lambda x: x.name):
-            if node is current_node:
+            if node is current_node or node.is_derived_node:
                 continue
 
             if not self.edit_mode and node not in self.current_area.connections[current_node]:
@@ -501,6 +505,13 @@ class DataEditorWindow(QMainWindow, Ui_DataEditorWindow):
 
         requirement = self.current_area.connections[current_node].get(self.current_connection_node,
                                                                       Requirement.impossible())
+        if self._collection_for_filtering is not None:
+            requirement = requirement.patch_requirements(
+                self._collection_for_filtering,
+                1.0,
+                self.game_description.resource_database,
+            )
+
         self._connections_visualizer = ConnectionsVisualizer(
             self.other_node_alternatives_contents,
             self.alternatives_grid_layout,
@@ -623,7 +634,8 @@ class DataEditorWindow(QMainWindow, Ui_DataEditorWindow):
         return NodeIdentifier.create(self.current_world.name, self.current_area.name, node_name)
 
     def _do_create_node(self, node_name: str, location: Optional[NodeLocation]):
-        new_node = GenericNode(self._create_identifier(node_name), False, location, "", ("default",), {})
+        new_node = GenericNode(self._create_identifier(node_name), self.editor.new_node_index(),
+                               False, location, "", ("default",), {})
         self.editor.add_node(self.current_area, new_node)
         self.on_select_area(new_node)
 
@@ -653,6 +665,7 @@ class DataEditorWindow(QMainWindow, Ui_DataEditorWindow):
 
         new_node_this_area = DockNode(
             identifier=new_node_this_area_identifier,
+            node_index=self.editor.new_node_index(),
             heal=False, location=location, description="", layers=("default",), extra={},
             dock_type=dock_weakness[0],
             default_connection=new_node_other_area_identifier,
@@ -662,6 +675,7 @@ class DataEditorWindow(QMainWindow, Ui_DataEditorWindow):
 
         new_node_other_area = DockNode(
             identifier=new_node_other_area_identifier,
+            node_index=self.editor.new_node_index(),
             heal=False, location=location, description="", layers=("default",), extra={},
             dock_type=dock_weakness[0],
             default_connection=new_node_this_area_identifier,
@@ -735,8 +749,10 @@ class DataEditorWindow(QMainWindow, Ui_DataEditorWindow):
 
             resources = self.layers_editor.selected_tricks()
             if resources:
-                game = game.get_mutable()
-                game.patch_requirements(ResourceCollection.from_resource_gain(resources.items()), 1.0)
+                self._collection_for_filtering = ResourceCollection.from_resource_gain(game.resource_database,
+                                                                                       resources.items())
+            else:
+                self._collection_for_filtering = None
 
         self.update_game(game)
 

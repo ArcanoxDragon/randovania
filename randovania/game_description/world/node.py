@@ -7,7 +7,7 @@ from typing import Optional, NamedTuple
 from frozendict import frozendict
 
 from randovania.game_description.game_patches import GamePatches
-from randovania.game_description.requirements import Requirement
+from randovania.game_description.requirements.base import Requirement
 from randovania.game_description.world.node_identifier import NodeIdentifier
 from randovania.lib import frozen_lib
 
@@ -15,6 +15,9 @@ if typing.TYPE_CHECKING:
     from randovania.game_description.resources.resource_database import ResourceDatabase
     from randovania.game_description.resources.resource_info import ResourceInfo, ResourceCollection
     from randovania.game_description.world.node_provider import NodeProvider
+
+
+NodeIndex = int
 
 
 class NodeLocation(NamedTuple):
@@ -37,12 +40,12 @@ class NodeContext:
 @dataclasses.dataclass(frozen=True, slots=True)
 class Node:
     identifier: NodeIdentifier
+    node_index: NodeIndex = dataclasses.field(hash=False, compare=False)
     heal: bool
     location: Optional[NodeLocation]
     description: str
     layers: tuple[str, ...]
     extra: dict[str, typing.Any]
-    index: int = dataclasses.field(init=False, hash=False, compare=False)
 
     def __lt__(self, other: "Node"):
         return self.identifier < other.identifier
@@ -53,13 +56,6 @@ class Node:
     @property
     def name(self):
         return self.identifier.node_name
-
-    def get_index(self):
-        """
-        Gets a unique index for this node. Used by GeneratorReach
-        :return:
-        """
-        return self.index
 
     def __post_init__(self):
         if not self.layers:
@@ -72,6 +68,11 @@ class Node:
 
     @property
     def is_resource_node(self) -> bool:
+        return False
+
+    @property
+    def is_derived_node(self) -> bool:
+        """If True, this node was created dynamically from other nodes."""
         return False
 
     def requirement_to_leave(self, context: NodeContext) -> Requirement:

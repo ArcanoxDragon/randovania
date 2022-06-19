@@ -1,12 +1,15 @@
+import copy
 import json
 from pathlib import Path
 from typing import List, Callable, TypeVar, Tuple, Dict, Type, Optional, Hashable, Any
 
 from randovania.game_description import game_migration
 from randovania.game_description.game_description import GameDescription, MinimalLogicData, IndexWithReason
-from randovania.game_description.requirements import (
-    ResourceRequirement, Requirement, RequirementOr, RequirementAnd, RequirementTemplate
-)
+from randovania.game_description.requirements.base import Requirement
+from randovania.game_description.requirements.requirement_and import RequirementAnd
+from randovania.game_description.requirements.requirement_or import RequirementOr
+from randovania.game_description.requirements.requirement_template import RequirementTemplate
+from randovania.game_description.requirements.resource_requirement import ResourceRequirement
 from randovania.game_description.resources.damage_resource_info import DamageReduction
 from randovania.game_description.resources.item_resource_info import ItemResourceInfo
 from randovania.game_description.resources.pickup_index import PickupIndex
@@ -19,23 +22,25 @@ from randovania.game_description.resources.search import (
 )
 from randovania.game_description.resources.simple_resource_info import SimpleResourceInfo
 from randovania.game_description.resources.trick_resource_info import TrickResourceInfo
+from randovania.game_description.world import event_pickup
 from randovania.game_description.world.area import Area
 from randovania.game_description.world.area_identifier import AreaIdentifier
+from randovania.game_description.world.configurable_node import ConfigurableNode
 from randovania.game_description.world.dock import (
     DockRandoParams, DockWeakness, DockType, DockWeaknessDatabase, DockLockType, DockLock
 )
+from randovania.game_description.world.dock_lock_node import DockLockNode
+from randovania.game_description.world.dock_node import DockNode
+from randovania.game_description.world.event_node import EventNode
+from randovania.game_description.world.logbook_node import LoreType, LogbookNode
 from randovania.game_description.world.node import (
     GenericNode, Node,
     NodeLocation
 )
-from randovania.game_description.world.configurable_node import ConfigurableNode
 from randovania.game_description.world.node_identifier import NodeIdentifier
-from randovania.game_description.world.teleporter_node import TeleporterNode
-from randovania.game_description.world.dock_node import DockNode
-from randovania.game_description.world.player_ship_node import PlayerShipNode
-from randovania.game_description.world.logbook_node import LoreType, LogbookNode
-from randovania.game_description.world.event_node import EventNode
 from randovania.game_description.world.pickup_node import PickupNode
+from randovania.game_description.world.player_ship_node import PlayerShipNode
+from randovania.game_description.world.teleporter_node import TeleporterNode
 from randovania.game_description.world.world import World
 from randovania.game_description.world.world_list import WorldList
 from randovania.games.game import RandovaniaGame
@@ -53,23 +58,31 @@ def read_array(data: List[Y], item_reader: Callable[[Y], X]) -> List[X]:
     return [item_reader(item) for item in data]
 
 
-def read_resource_info(name: str, data: Dict, resource_type: ResourceType) -> SimpleResourceInfo:
-    return SimpleResourceInfo(data["long_name"],
-                              name, resource_type, frozen_lib.wrap(data["extra"]))
+#
 
+class ResourceReader:
+    def __init__(self, next_index: int = 0):
+        self.next_index = next_index
 
-def read_item_resource_info(name: str, data: Dict) -> ItemResourceInfo:
-    return ItemResourceInfo(data["long_name"],
-                            name, data["max_capacity"], frozen_lib.wrap(data["extra"]))
+    def make_index(self):
+        result = self.next_index
+        self.next_index += 1
+        return result
 
+    def read_resource_info(self, name: str, data: Dict, resource_type: ResourceType) -> SimpleResourceInfo:
+        return SimpleResourceInfo(self.make_index(), data["long_name"],
+                                  name, resource_type, frozen_lib.wrap(data["extra"]))
 
-def read_trick_resource_info(name: str, data: Dict) -> TrickResourceInfo:
-    return TrickResourceInfo(data["long_name"],
-                             name, data["description"], frozen_lib.wrap(data["extra"]))
+    def read_item_resource_info(self, name: str, data: Dict) -> ItemResourceInfo:
+        return ItemResourceInfo(self.make_index(), data["long_name"],
+                                name, data["max_capacity"], frozen_lib.wrap(data["extra"]))
 
+    def read_trick_resource_info(self, name: str, data: Dict) -> TrickResourceInfo:
+        return TrickResourceInfo(self.make_index(), data["long_name"],
+                                 name, data["description"], frozen_lib.wrap(data["extra"]))
 
-def read_resource_info_array(data: Dict[str, Dict], resource_type: ResourceType) -> List[SimpleResourceInfo]:
-    return read_dict(data, lambda name, info: read_resource_info(name, info, resource_type=resource_type))
+    def read_resource_info_array(self, data: Dict[str, Dict], resource_type: ResourceType) -> List[SimpleResourceInfo]:
+        return read_dict(data, lambda name, info: self.read_resource_info(name, info, resource_type=resource_type))
 
 
 # Damage
@@ -185,8 +198,9 @@ def read_dock_lock(data: Optional[dict], resource_database: ResourceDatabase) ->
 
 # Dock Weakness
 
-def read_dock_weakness(name: str, item: dict, resource_database: ResourceDatabase) -> DockWeakness:
+def read_dock_weakness(index: int, name: str, item: dict, resource_database: ResourceDatabase) -> DockWeakness:
     return DockWeakness(
+        index,
         name,
         frozen_lib.wrap(item["extra"]),
         read_requirement(item["requirement"], resource_database),
@@ -208,16 +222,23 @@ def read_dock_weakness_database(data: dict,
     dock_types = read_dict(data["types"], read_dock_type)
     weaknesses: dict[DockType, dict[str, DockWeakness]] = {}
     dock_rando: dict[DockType, DockRandoParams] = {}
+    next_index = 0
+
+    def get_index():
+        nonlocal next_index
+        result = next_index
+        next_index += 1
+        return result
 
     for dock_type, type_data in zip(dock_types, data["types"].values()):
         weaknesses[dock_type] = {
-            weak_name: read_dock_weakness(weak_name, weak_data, resource_database)
+            weak_name: read_dock_weakness(get_index(), weak_name, weak_data, resource_database)
             for weak_name, weak_data in type_data["items"].items()
         }
 
         def weakness_or_none(weak):
             return weak if weak is None else weaknesses[dock_type][weak]
-        
+
         dr = type_data["dock_rando"]
         dock_rando[dock_type] = DockRandoParams(
             unlocked=weakness_or_none(dr["unlocked"]),
@@ -247,14 +268,15 @@ class WorldReader:
     dock_weakness_database: DockWeaknessDatabase
     current_world_name: str
     current_area_name: str
+    next_node_index: int
 
     def __init__(self,
                  resource_database: ResourceDatabase,
                  dock_weakness_database: DockWeaknessDatabase,
                  ):
-
         self.resource_database = resource_database
         self.dock_weakness_database = dock_weakness_database
+        self.next_node_index = 0
 
     def _get_scan_visor(self) -> ItemResourceInfo:
         try:
@@ -282,12 +304,14 @@ class WorldReader:
 
             generic_args = {
                 "identifier": NodeIdentifier.create(self.current_world_name, self.current_area_name, name),
+                "node_index": self.next_node_index,
                 "heal": data["heal"],
                 "location": location,
                 "description": data["description"],
                 "layers": tuple(data["layers"]),
                 "extra": frozen_lib.wrap(data["extra"]),
             }
+            self.next_node_index += 1
             node_type: int = data["node_type"]
 
             if node_type == "generic":
@@ -391,6 +415,23 @@ class WorldReader:
                     connections[origin][nodes_by_name[target_name]] = the_set
                 except (MissingResource, KeyError) as e:
                     raise type(e)(f"In area {area_name}, connection from {origin.name} to {target_name} got error: {e}")
+
+        for node in list(nodes):
+            if isinstance(node, DockNode):
+                lock_node = DockLockNode.create_from_dock(node, self.next_node_index)
+                nodes.append(lock_node)
+                connections[lock_node] = {}
+                self.next_node_index += 1
+
+        for combo in event_pickup.find_nodes_to_combine(nodes, connections):
+            combo_node = event_pickup.EventPickupNode.create_from(self.next_node_index, *combo)
+            nodes.append(combo_node)
+            for existing_connections in connections.values():
+                if combo[0] in existing_connections:
+                    existing_connections[combo_node] = copy.copy(existing_connections[combo[0]])
+            connections[combo_node] = copy.copy(connections[combo[1]])
+            self.next_node_index += 1
+
         try:
             return Area(area_name, data["default_node"],
                         data["valid_starting_location"],
@@ -421,15 +462,17 @@ def read_requirement_templates(data: Dict, database: ResourceDatabase) -> Dict[s
 
 
 def read_resource_database(game: RandovaniaGame, data: Dict) -> ResourceDatabase:
-    item = read_dict(data["items"], read_item_resource_info)
+    reader = ResourceReader()
+
+    item = read_dict(data["items"], reader.read_item_resource_info)
     db = ResourceDatabase(
         game_enum=game,
         item=item,
-        event=read_resource_info_array(data["events"], ResourceType.EVENT),
-        trick=read_dict(data["tricks"], read_trick_resource_info),
-        damage=read_resource_info_array(data["damage"], ResourceType.DAMAGE),
-        version=read_resource_info_array(data["versions"], ResourceType.VERSION),
-        misc=read_resource_info_array(data["misc"], ResourceType.MISC),
+        event=reader.read_resource_info_array(data["events"], ResourceType.EVENT),
+        trick=read_dict(data["tricks"], reader.read_trick_resource_info),
+        damage=reader.read_resource_info_array(data["damage"], ResourceType.DAMAGE),
+        version=reader.read_resource_info_array(data["versions"], ResourceType.VERSION),
+        misc=reader.read_resource_info_array(data["misc"], ResourceType.MISC),
         requirement_template={},
         damage_reductions={},
         energy_tank_item_index=data["energy_tank_item_index"],

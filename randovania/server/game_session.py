@@ -140,15 +140,18 @@ def _get_preset(preset_json: dict) -> VersionedPreset:
 
 
 def _emit_session_meta_update(session: GameSession):
-    flask_socketio.emit("game_session_meta_update", session.create_session_entry(), room=f"game-session-{session.id}")
+    flask_socketio.emit("game_session_meta_update", session.create_session_entry(), room=f"game-session-{session.id}",
+                        namespace="/")
 
 
 def _emit_session_actions_update(session: GameSession):
-    flask_socketio.emit("game_session_actions_update", session.describe_actions(), room=f"game-session-{session.id}")
+    flask_socketio.emit("game_session_actions_update", session.describe_actions(), room=f"game-session-{session.id}",
+                        namespace="/")
 
 
 def _emit_session_audit_update(session: GameSession):
-    flask_socketio.emit("game_session_audit_update", session.get_audit_log(), room=f"game-session-{session.id}")
+    flask_socketio.emit("game_session_audit_update", session.get_audit_log(), room=f"game-session-{session.id}",
+                        namespace="/")
 
 
 def _add_audit_entry(sio: ServerApp, session: GameSession, message: str):
@@ -552,7 +555,11 @@ def game_session_admin_player(sio: ServerApp, session_id: int, user_id: int, act
         _add_audit_entry(sio, session, f"Made an ISO for row {membership.row + 1}")
 
         data_factory = preset.game.patch_data_factory(layout_description, players_config, cosmetic_patches)
-        return data_factory.create_data()
+        try:
+            return data_factory.create_data()
+        except Exception as e:
+            logger().exception("Error when creating patch data")
+            raise InvalidAction(f"Unable to export game: {e}")
 
     elif action == SessionAdminUserAction.ABANDON:
         # FIXME

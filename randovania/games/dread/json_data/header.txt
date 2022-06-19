@@ -113,6 +113,11 @@ Templates
           # Gain a little extra height in water without Gravity Suit by using a Cross Bomb
           No Gravity Suit and Water Bomb Jump (Intermediate) and Lay Cross Comb
 
+* Open Charge Door:
+      Any of the following:
+          Shoot Charge Beam
+          Knowledge (Beginner) and Lay Power Bomb
+
 ====================
 Dock Weaknesses
 
@@ -218,6 +223,12 @@ Dock Weaknesses
   * Artaria Thermal Door
       Open:
           After Artaria - Thermal Device
+      No lock
+
+
+  * Cataris Thermal Door
+      Open:
+          After Cataris - deviceheat_002
       No lock
 
   > Dock Rando: Disabled

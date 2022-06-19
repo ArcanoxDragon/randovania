@@ -2,11 +2,12 @@ import dataclasses
 from typing import Optional
 
 from randovania.game_description.game_description import GameDescription
-from randovania.game_description.requirements import Requirement
+from randovania.game_description.requirements.base import Requirement
 from randovania.game_description.world.area import Area
 from randovania.game_description.world.area_identifier import AreaIdentifier
+from randovania.game_description.world.dock_lock_node import DockLockNode
 from randovania.game_description.world.dock_node import DockNode
-from randovania.game_description.world.node import Node
+from randovania.game_description.world.node import Node, NodeIndex
 from randovania.game_description.world.node_identifier import NodeIdentifier
 from randovania.game_description.world.teleporter_node import TeleporterNode
 
@@ -14,6 +15,12 @@ from randovania.game_description.world.teleporter_node import TeleporterNode
 class Editor:
     def __init__(self, game: GameDescription):
         self.game = game
+        self.next_node_index = len(game.world_list.all_nodes)
+
+    def new_node_index(self) -> NodeIndex:
+        result = self.next_node_index
+        self.next_node_index += 1
+        return result
 
     def edit_connections(self, area: Area, from_node: Node, target_node: Node, requirement: Optional[Requirement]):
         current_connections = area.connections[from_node]
@@ -44,6 +51,9 @@ class Editor:
 
         self.game.world_list.invalidate_node_cache()
 
+        if isinstance(node, DockNode):
+            self.remove_node(area, node.lock_node)
+
     def replace_node(self, area: Area, old_node: Node, new_node: Node):
         def sub(n: Node):
             return new_node if n == old_node else n
@@ -57,6 +67,9 @@ class Editor:
 
         if old_node.name != new_node.name and area.node_with_name(new_node.name) is not None:
             raise ValueError(f"A node named {new_node.name} already exists.")
+
+        if isinstance(old_node, DockNode):
+            self.remove_node(area, old_node.lock_node)
 
         old_identifier = old_node.identifier
         self.replace_references_to_node_identifier(
@@ -78,6 +91,9 @@ class Editor:
         if area.default_node == old_node.name:
             object.__setattr__(area, "default_node", new_node.name)
         area.clear_dock_cache()
+
+        if isinstance(new_node, DockNode):
+            self.add_node(area, DockLockNode.create_from_dock(new_node, self.new_node_index()))
 
         self.game.world_list.invalidate_node_cache()
 
@@ -126,9 +142,9 @@ class Editor:
                                 identifier=node.identifier.renamed(
                                     node.name.replace(old_identifier.area_name, new_identifier.area_name),
                                 ),
-                                default_connection=dataclasses.replace(
-                                    node.default_connection,
+                                default_connection=NodeIdentifier(
                                     area_identifier=new_identifier,
+                                    node_name=node.default_connection.node_name,
                                 ),
                             )
 

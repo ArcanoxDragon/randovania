@@ -36,16 +36,16 @@ def _create_world_list(asset_id: int, pickup_index: PickupIndex):
     nc = NodeIdentifier.create
 
     logbook_node = LogbookNode(nc("World", "Area", "Logbook A"),
-                               True, None, "", ("default",), {}, asset_id, None, None, None, None)
+                               0, True, None, "", ("default",), {}, asset_id, None, None, None, None)
     pickup_node = PickupNode(nc("World", "Area", "Pickup Node"),
-                             True, None, "", ("default",), {}, pickup_index, True)
+                             1, True, None, "", ("default",), {}, pickup_index, True)
 
     world_list = WorldList([
         World("World", [
-            Area("Area", 0, True, [logbook_node, pickup_node], {}, {}),
-            Area("Other Area", 0, True,
+            Area("Area", None, True, [logbook_node, pickup_node], {}, {}),
+            Area("Other Area", None, True,
                  [PickupNode(nc("World", "Other Area", f"Pickup {i}"),
-                             True, None, "", ("default",), {}, PickupIndex(i), True)
+                             2 + i, True, None, "", ("default",), {}, PickupIndex(i), True)
                   for i in range(pickup_index.index)],
                  {}, {}),
         ], {}),
@@ -380,10 +380,10 @@ def test_create_hints_light_suit_location(echoes_game_patches, players_config, b
 def test_create_message_for_hint_relative_item(echoes_game_patches, blank_pickup, players_config,
                                                distance_precise, distance_text,
                                                reference_precision, reference_name):
-    patches = echoes_game_patches.assign_pickup_assignment({
-        PickupIndex(5): PickupTarget(blank_pickup, 0),
-        PickupIndex(15): PickupTarget(dataclasses.replace(blank_pickup, name="Reference Pickup"), 0),
-    })
+    patches = echoes_game_patches.assign_new_pickups([
+        (PickupIndex(5), PickupTarget(blank_pickup, 0)),
+        (PickupIndex(15), PickupTarget(dataclasses.replace(blank_pickup, name="Reference Pickup"), 0)),
+    ])
 
     hint = Hint(
         HintType.LOCATION,
@@ -414,9 +414,9 @@ def test_create_message_for_hint_relative_item(echoes_game_patches, blank_pickup
 def test_create_message_for_hint_relative_area(echoes_game_patches, blank_pickup, players_config,
                                                echoes_hint_exporter,
                                                offset, distance_text):
-    patches = echoes_game_patches.assign_pickup_assignment({
-        PickupIndex(5): PickupTarget(blank_pickup, 0),
-    })
+    patches = echoes_game_patches.assign_new_pickups([
+        (PickupIndex(5), PickupTarget(blank_pickup, 0)),
+    ])
 
     hint = Hint(
         HintType.LOCATION,

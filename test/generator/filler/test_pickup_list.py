@@ -1,6 +1,8 @@
 from unittest.mock import MagicMock
 
-from randovania.game_description.requirements import RequirementSet, RequirementList, ResourceRequirement
+from randovania.game_description.requirements.requirement_set import RequirementSet
+from randovania.game_description.requirements.requirement_list import RequirementList
+from randovania.game_description.requirements.resource_requirement import ResourceRequirement
 from randovania.game_description.resources import search
 from randovania.game_description.resources.resource_info import ResourceCollection
 from randovania.generator.filler import pickup_list
@@ -24,27 +26,27 @@ def test_requirement_lists_without_satisfied_resources(echoes_game_description, 
     possible_sets = [
         RequirementSet([
             RequirementList([
-                ResourceRequirement(item("Dark Visor"), 1, False),
-                ResourceRequirement(item("Missile"), 5, False),
-                ResourceRequirement(item("Seeker Launcher"), 1, False),
+                ResourceRequirement.simple(item("Dark Visor")),
+                ResourceRequirement.create(item("Missile"), 5, False),
+                ResourceRequirement.simple(item("Seeker Launcher")),
             ]),
             RequirementList([
-                ResourceRequirement(item("Screw Attack"), 1, False),
-                ResourceRequirement(item("Space Jump Boots"), 1, False),
+                ResourceRequirement.simple(item("Screw Attack")),
+                ResourceRequirement.simple(item("Space Jump Boots")),
             ]),
             RequirementList([
-                ResourceRequirement(item("Power Bomb"), 1, False),
-                ResourceRequirement(item("Boost Ball"), 1, False),
+                ResourceRequirement.simple(item("Power Bomb")),
+                ResourceRequirement.simple(item("Boost Ball")),
             ]),
         ]),
         RequirementSet([
             RequirementList([
-                ResourceRequirement(item("Power Bomb"), 1, False),
-                ResourceRequirement(item("Boost Ball"), 1, False),
+                ResourceRequirement.simple(item("Power Bomb")),
+                ResourceRequirement.simple(item("Boost Ball")),
             ]),
             RequirementList([
-                ResourceRequirement(item("Spider Ball"), 1, False),
-                ResourceRequirement(item("Boost Ball"), 1, False),
+                ResourceRequirement.simple(item("Spider Ball")),
+                ResourceRequirement.simple(item("Boost Ball")),
             ]),
         ]),
     ]
@@ -57,19 +59,19 @@ def test_requirement_lists_without_satisfied_resources(echoes_game_description, 
     # Assert
     assert result == {
         RequirementList([
-            ResourceRequirement(item("Dark Visor"), 1, False),
-            ResourceRequirement(item("Missile"), 5, False),
+            ResourceRequirement.simple(item("Dark Visor")),
+            ResourceRequirement.create(item("Missile"), 5, False),
         ]),
         RequirementList([
-            ResourceRequirement(item("Screw Attack"), 1, False),
+            ResourceRequirement.simple(item("Screw Attack")),
         ]),
         RequirementList([
-            ResourceRequirement(item("Power Bomb"), 1, False),
-            ResourceRequirement(item("Boost Ball"), 1, False),
+            ResourceRequirement.simple(item("Power Bomb")),
+            ResourceRequirement.simple(item("Boost Ball")),
         ]),
         RequirementList([
-            ResourceRequirement(item("Spider Ball"), 1, False),
-            ResourceRequirement(item("Boost Ball"), 1, False),
+            ResourceRequirement.simple(item("Spider Ball")),
+            ResourceRequirement.simple(item("Boost Ball")),
         ]),
     }
 
@@ -89,22 +91,24 @@ def test_get_pickups_that_solves_unreachable(echoes_game_description, mocker):
     possible_set = MagicMock()
     reach.unreachable_nodes_with_requirements.return_value = {"foo": possible_set}
     uncollected_resource_nodes = [MagicMock()]
+    resource = MagicMock()
+    uncollected_resource_nodes[0].resource_gain_on_collect.return_value = [(resource, 1)]
 
     mock_req_lists.return_value = {
         RequirementList([
-            ResourceRequirement(item("Dark Visor"), 1, False),
-            ResourceRequirement(item("Missile"), 5, False),
+            ResourceRequirement.simple(item("Dark Visor")),
+            ResourceRequirement.create(item("Missile"), 5, False),
         ]),
         RequirementList([
-            ResourceRequirement(item("Screw Attack"), 1, False),
+            ResourceRequirement.simple(item("Screw Attack")),
         ]),
         RequirementList([
-            ResourceRequirement(item("Power Bomb"), 1, False),
-            ResourceRequirement(item("Boost Ball"), 1, False),
+            ResourceRequirement.simple(item("Power Bomb")),
+            ResourceRequirement.simple(item("Boost Ball")),
         ]),
         RequirementList([
-            ResourceRequirement(item("Spider Ball"), 1, False),
-            ResourceRequirement(item("Boost Ball"), 1, False),
+            ResourceRequirement.simple(item("Spider Ball")),
+            ResourceRequirement.simple(item("Boost Ball")),
         ]),
     }
 
@@ -112,6 +116,5 @@ def test_get_pickups_that_solves_unreachable(echoes_game_description, mocker):
     result = pickup_list.get_pickups_that_solves_unreachable(pickups_left, reach, uncollected_resource_nodes)
 
     # Assert
-    mock_req_lists.assert_called_once_with(reach.state, [possible_set],
-                                           [uncollected_resource_nodes[0].resource.return_value])
+    mock_req_lists.assert_called_once_with(reach.state, [possible_set], {resource})
     assert result == tuple()

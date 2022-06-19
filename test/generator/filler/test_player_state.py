@@ -29,16 +29,15 @@ def _default_filler_config() -> FillerConfiguration:
 
 @pytest.fixture(name="state_for_blank")
 def _state_for_blank(default_filler_config, blank_game_description, default_blank_configuration,
-                     blank_game_patches) -> player_state.PlayerState:
+                     empty_patches) -> player_state.PlayerState:
     game = blank_game_description.get_mutable()
-    derived_nodes.create_derived_nodes(game)
 
     return player_state.PlayerState(
         index=0,
         game=game,
         initial_state=game.game.generator.bootstrap.calculate_starting_state(
             game,
-            blank_game_patches,
+            empty_patches,
             default_blank_configuration,
         ),
         pickups_left=[],
@@ -50,7 +49,7 @@ def test_current_state_report(state_for_blank):
     result = state_for_blank.current_state_report()
     assert result == (
         "At Intro/Back-Only Lock Room/Event - Key Switch 1 after 0 actions and 0 pickups, "
-        "with 3 collected locations, 14 safe nodes.\n\n"
+        "with 3 collected locations, 17 safe nodes.\n\n"
         "Pickups still available: \n\n"
         "Resources to progress: Blue Key, Missile, Weapon\n\n"
         "Paths to be opened:\n"
@@ -61,7 +60,7 @@ def test_current_state_report(state_for_blank):
         "None\n"
         "\n"
         "Reachable nodes:\n"
-        "18 nodes total"
+        "22 nodes total"
     )
 
 
