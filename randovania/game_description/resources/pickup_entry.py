@@ -63,6 +63,7 @@ class PickupEntry:
     probability_offset: float = 0
     probability_multiplier: float = 1
     required_progression: int = 0
+    can_be_starting: bool = True
 
     def __post_init__(self):
         if not isinstance(self.progression, tuple):

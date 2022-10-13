@@ -45,6 +45,7 @@ class MajorItemState:
     include_copy_in_original_location: bool = False
     num_shuffled_pickups: int = 0
     num_included_in_starting_items: int = 0
+    allow_as_starting_item: bool = True
     priority: float = 1.0
     included_ammo: tuple[int, ...] = tuple()
 
@@ -62,6 +63,9 @@ class MajorItemState:
         if self.num_included_in_starting_items > 0:
             if len(item.progression) > 1:
                 raise ValueError(f"Progressive items cannot be starting item. ({item.name})")
+
+            if not self.allow_as_starting_item:
+                raise ValueError(f"Item is not allowed as a starting item. ({item.name})")
 
             for progression in item.progression:
                 if self.num_included_in_starting_items > db.get_item(progression).max_capacity:
@@ -151,6 +155,9 @@ class MajorItemState:
                     if all_equal:
                         break
 
+        # exclude from starting
+        yield from bitpacking.encode_bool(self.allow_as_starting_item)
+
     @classmethod
     def bit_pack_unpack(cls, decoder: BitPackDecoder, item: MajorItem, reference: MajorItemState) -> MajorItemState:
         db = default_database.resource_database_for(item.game)
@@ -193,10 +200,14 @@ class MajorItemState:
         else:
             included_ammo = []
 
+        # exclude from starting
+        exclude_from_starting = bitpacking.decode_bool(decoder)
+
         return cls(
             include_copy_in_original_location=original,
             num_shuffled_pickups=shuffled,
             num_included_in_starting_items=starting,
             priority=priority,
             included_ammo=tuple(included_ammo),
+            exclude_from_starting=exclude_from_starting,
         )

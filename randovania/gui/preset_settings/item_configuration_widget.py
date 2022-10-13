@@ -51,6 +51,7 @@ class ItemConfigurationWidget(QWidget, Ui_ItemConfigurationPopup):
         self.state_case_combo.currentIndexChanged.connect(self._on_select_case)
         self.vanilla_check.toggled.connect(self._on_select)
         self.starting_check.toggled.connect(self._on_select)
+        self.exclude_from_starting_check.toggled.connect(self._on_select)
         self.shuffled_spinbox.valueChanged.connect(self._on_select)
         self.shuffled_spinbox.setMaximum(DEFAULT_MAXIMUM_SHUFFLED[-1])
         self.provided_ammo_spinbox.valueChanged.connect(self._on_select)
@@ -96,8 +97,8 @@ class ItemConfigurationWidget(QWidget, Ui_ItemConfigurationPopup):
             self.set_new_state(starting_state)
 
     def set_custom_fields_visible(self, visible: bool):
-        for item in [self.vanilla_check, self.starting_check, self.priority_label,
-                     self.priority_combo, self.shuffled_spinbox]:
+        for item in [self.vanilla_check, self.starting_check, self.exclude_from_starting_check,
+                     self.priority_label, self.priority_combo, self.shuffled_spinbox]:
             item.setVisible(visible)
 
     @property
@@ -148,6 +149,7 @@ class ItemConfigurationWidget(QWidget, Ui_ItemConfigurationPopup):
                 include_copy_in_original_location=self.vanilla_check.isChecked(),
                 num_shuffled_pickups=self.shuffled_spinbox.value(),
                 num_included_in_starting_items=1 if self.starting_check.isChecked() else 0,
+                allow_as_starting_item=not self.exclude_from_starting_check.isChecked(),
                 priority=self.priority_combo.currentData(),
                 included_ammo=self.included_ammo,
             )
@@ -159,13 +161,30 @@ class ItemConfigurationWidget(QWidget, Ui_ItemConfigurationPopup):
             self.case = self._case_from_state(value)
             self._update_for_state(value)
 
-    def _update_for_state(self, state):
+    def _update_for_state(self, state: MajorItemState):
         if state.included_ammo:
             self.provided_ammo_spinbox.setValue(state.included_ammo[0])
 
         self.vanilla_check.setChecked(state.include_copy_in_original_location)
         self.shuffled_spinbox.setValue(state.num_shuffled_pickups)
-        self.starting_check.setChecked(state.num_included_in_starting_items > 0)
+
+        as_starting = state.num_included_in_starting_items > 0
+        exclude_from_starting = not state.allow_as_starting_item
+
+        if exclude_from_starting:
+            self.starting_check.setEnabled(False)
+            as_starting = False
+        else:
+            self.starting_check.setEnabled(True)
+
+        if as_starting:
+            self.exclude_from_starting_check.setEnabled(False)
+            exclude_from_starting = False
+        else:
+            self.exclude_from_starting_check.setEnabled(True)
+
+        self.starting_check.setChecked(as_starting)
+        self.exclude_from_starting_check.setChecked(exclude_from_starting)
 
         priority_index = self.priority_combo.findData(state.priority)
         if priority_index >= 0:

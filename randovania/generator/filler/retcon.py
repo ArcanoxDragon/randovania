@@ -293,8 +293,8 @@ def _assign_pickup_somewhere(action: PickupEntry,
 
     locations_weighted = current_player.filter_usable_locations(all_locations_weighted)
 
-    if locations_weighted and (current_player.num_random_starting_items_placed
-                               >= current_player.configuration.minimum_random_starting_items):
+    if locations_weighted and (not action.can_be_starting or (current_player.num_random_starting_items_placed
+                               >= current_player.configuration.minimum_random_starting_items)):
 
         if debug.debug_level() > 2:
             debug_print_weighted_locations(all_locations_weighted)

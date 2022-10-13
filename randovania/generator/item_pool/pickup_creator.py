@@ -62,6 +62,7 @@ def create_major_item(item: MajorItem,
         unlocks_resource=item.unlocks_ammo,
         respects_lock=ammo_requires_major_item,
         resource_lock=ammo.create_resource_lock(resource_database) if ammo is not None else None,
+        can_be_starting=state.allow_as_starting_item,
     )
 
 
