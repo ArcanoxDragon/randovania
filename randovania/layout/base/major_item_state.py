@@ -155,7 +155,7 @@ class MajorItemState:
                     if all_equal:
                         break
 
-        # exclude from starting
+        # allow as starting
         yield from bitpacking.encode_bool(self.allow_as_starting_item)
 
     @classmethod
@@ -200,8 +200,8 @@ class MajorItemState:
         else:
             included_ammo = []
 
-        # exclude from starting
-        exclude_from_starting = bitpacking.decode_bool(decoder)
+        # allow as starting
+        allow_as_starting_item = bitpacking.decode_bool(decoder)
 
         return cls(
             include_copy_in_original_location=original,
@@ -209,5 +209,5 @@ class MajorItemState:
             num_included_in_starting_items=starting,
             priority=priority,
             included_ammo=tuple(included_ammo),
-            exclude_from_starting=exclude_from_starting,
+            allow_as_starting_item=allow_as_starting_item,
         )
