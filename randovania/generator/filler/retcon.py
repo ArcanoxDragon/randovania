@@ -218,7 +218,16 @@ def retcon_playthrough_filler(rng: Random,
         status_update(f"{last_message} {message}")
 
     for player_state in player_states:
+        # temporarily remove excluded starting items from pickups_left while we update the initial player states
+        excluded_starting_pickups = [pickup for pickup in player_state.pickups_left if not pickup.can_be_starting]
+        for pickup in excluded_starting_pickups:
+            player_state.pickups_left.remove(pickup)
+
         player_state.update_for_new_state()
+
+        # now put the excluded starting items back
+        for pickup in excluded_starting_pickups:
+            player_state.pickups_left.append(pickup)
 
     actions_log = []
 
