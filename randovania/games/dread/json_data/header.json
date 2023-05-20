@@ -4652,6 +4652,36 @@
                         }
                     ]
                 }
+            },
+            "Open Storm Missile Door": {
+                "type": "and",
+                "data": {
+                    "comment": null,
+                    "items": [
+                        {
+                            "type": "resource",
+                            "data": {
+                                "type": "items",
+                                "name": "MissileAmmo",
+                                "amount": 3,
+                                "negate": false
+                            }
+                        },
+                        {
+                            "type": "resource",
+                            "data": {
+                                "type": "items",
+                                "name": "Storm",
+                                "amount": 1,
+                                "negate": false
+                            }
+                        },
+                        {
+                            "type": "template",
+                            "data": "Shoot Missile"
+                        }
+                    ]
+                }
             }
         },
         "damage_reductions": [
@@ -5122,6 +5152,82 @@
                                 "data": "Shoot Diffusion Beam"
                             }
                         }
+                    },
+                    "Storm Missile Door": {
+                        "extra": {
+                            "type": "storm_missile"
+                        },
+                        "requirement": {
+                            "type": "and",
+                            "data": {
+                                "comment": null,
+                                "items": []
+                            }
+                        },
+                        "lock": {
+                            "lock_type": "front-blast-back-if-matching",
+                            "requirement": {
+                                "type": "template",
+                                "data": "Open Storm Missile Door"
+                            }
+                        }
+                    },
+                    "Bomb Door": {
+                        "extra": {
+                            "type": "bomb"
+                        },
+                        "requirement": {
+                            "type": "and",
+                            "data": {
+                                "comment": null,
+                                "items": []
+                            }
+                        },
+                        "lock": {
+                            "lock_type": "front-blast-back-if-matching",
+                            "requirement": {
+                                "type": "template",
+                                "data": "Lay Bomb"
+                            }
+                        }
+                    },
+                    "Cross Bomb Door": {
+                        "extra": {
+                            "type": "cross_bomb"
+                        },
+                        "requirement": {
+                            "type": "and",
+                            "data": {
+                                "comment": null,
+                                "items": []
+                            }
+                        },
+                        "lock": {
+                            "lock_type": "front-blast-back-if-matching",
+                            "requirement": {
+                                "type": "template",
+                                "data": "Lay Cross Bomb"
+                            }
+                        }
+                    },
+                    "Power Bomb Door": {
+                        "extra": {
+                            "type": "power_bomb"
+                        },
+                        "requirement": {
+                            "type": "and",
+                            "data": {
+                                "comment": null,
+                                "items": []
+                            }
+                        },
+                        "lock": {
+                            "lock_type": "front-blast-back-if-matching",
+                            "requirement": {
+                                "type": "template",
+                                "data": "Lay Power Bomb"
+                            }
+                        }
                     }
                 },
                 "dock_rando": {
@@ -5140,14 +5246,18 @@
                         "Wide Beam Door"
                     ],
                     "change_to": [
+                        "Bomb Door",
                         "Charge Beam Door",
+                        "Cross Bomb Door",
                         "Diffusion Beam Door",
                         "Grapple Beam Door",
                         "Ice Missile Door",
                         "Missile Door",
                         "Plasma Beam Door",
                         "Power Beam Door",
+                        "Power Bomb Door",
                         "Super Missile Door",
+                        "Storm Missile Door",
                         "Wave Beam Door",
                         "Wide Beam Door"
                     ]
