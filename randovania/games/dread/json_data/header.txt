@@ -370,6 +370,9 @@ Templates
 * Lay Normal Bomb:
       Bomb and Morph Ball
 
+* Open Storm Missile Door:
+      Missiles ≥ 3 and Storm Missile and Shoot Missile
+
 ====================
 Dock Weaknesses
 
@@ -508,6 +511,38 @@ Dock Weaknesses
           Trivial
       Lock type: FRONT_BLAST_BACK_IF_MATCHING
           Shoot Diffusion Beam
+
+
+  * Storm Missile Door
+      Extra - type: storm_missile
+      Open:
+          Trivial
+      Lock type: FRONT_BLAST_BACK_IF_MATCHING
+          Open Storm Missile Door
+
+
+  * Bomb Door
+      Extra - type: bomb
+      Open:
+          Trivial
+      Lock type: FRONT_BLAST_BACK_IF_MATCHING
+          Lay Bomb
+
+
+  * Cross Bomb Door
+      Extra - type: cross_bomb
+      Open:
+          Trivial
+      Lock type: FRONT_BLAST_BACK_IF_MATCHING
+          Lay Cross Bomb
+
+
+  * Power Bomb Door
+      Extra - type: power_bomb
+      Open:
+          Trivial
+      Lock type: FRONT_BLAST_BACK_IF_MATCHING
+          Lay Power Bomb
 
   > Dock Rando:
       Unlocked: Power Beam Door
