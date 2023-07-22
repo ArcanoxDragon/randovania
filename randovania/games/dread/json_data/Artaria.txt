@@ -2061,6 +2061,8 @@ Extra - asset_id: collision_camera_021
   * Extra - right_shield_def: None
   > Start Point
       Trivial
+  > Dock to Invisible Corpius Room
+      Aim Down Clip (Advanced) and Can SSC
 
 > Pickup (Missile Tank); Heals? False
   * Layers: default
@@ -2088,6 +2090,10 @@ Extra - asset_id: collision_camera_021
   * Slide Tunnel to Thermal Door Tutorial/Tunnel to David Jaffe Room
   > Start Point
       Trivial
+
+> Dock to Invisible Corpius Room; Heals? False
+  * Layers: default
+  * Open Passage to Invisible Corpius Room/Dock from David Jaffe Room
 
 ----------------
 Thermal Door Tutorial
@@ -3087,6 +3093,12 @@ Extra - asset_id: collision_camera_050
   > Door to Phantom Cloak Tutorial
       Trivial
   > Door to Thermal Door Tutorial
+      Trivial
+
+> Dock from David Jaffe Room; Heals? False
+  * Layers: default
+  * Blocked Passage to David Jaffe Room/Dock to Invisible Corpius Room
+  > Pickup (Missile Tank)
       Trivial
 
 ----------------
@@ -4220,6 +4232,8 @@ Extra - asset_id: collision_camera_070
       Any of the following:
           Morph Ball
           Before Artaria - ArbEnky Blob West and Can Slide
+  > Total Recharge
+      Aim Down Clip (Expert) and Can SSC
 
 > Event - ArbEnky Blob West; Heals? False
   * Layers: default

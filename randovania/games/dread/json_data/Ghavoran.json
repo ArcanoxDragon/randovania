@@ -5631,6 +5631,41 @@
                             }
                         }
                     }
+                },
+                "Dock from Central Unit": {
+                    "node_type": "dock",
+                    "heal": false,
+                    "coordinates": {
+                        "x": -8282.44,
+                        "y": 4032.36,
+                        "z": 0.0
+                    },
+                    "description": "",
+                    "layers": [
+                        "default"
+                    ],
+                    "extra": {},
+                    "valid_starting_location": false,
+                    "dock_type": "other",
+                    "default_connection": {
+                        "region": "Ghavoran",
+                        "area": "Central Unit",
+                        "node": "Dock to EMMI Zone Exit West"
+                    },
+                    "default_dock_weakness": "Blocked Passage",
+                    "exclude_from_dock_rando": false,
+                    "incompatible_dock_weaknesses": [],
+                    "override_default_open_requirement": null,
+                    "override_default_lock_requirement": null,
+                    "connections": {
+                        "Door to EMMI Zone Middle Path (Power)": {
+                            "type": "and",
+                            "data": {
+                                "comment": null,
+                                "items": []
+                            }
+                        }
+                    }
                 }
             }
         },
@@ -6137,8 +6172,104 @@
                                 "comment": null,
                                 "items": []
                             }
+                        },
+                        "Dock to EMMI Zone Exit West": {
+                            "type": "and",
+                            "data": {
+                                "comment": null,
+                                "items": [
+                                    {
+                                        "type": "template",
+                                        "data": "Can SSC"
+                                    },
+                                    {
+                                        "type": "resource",
+                                        "data": {
+                                            "type": "tricks",
+                                            "name": "ADC",
+                                            "amount": 3,
+                                            "negate": false
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "Dock to EMMI Zone Middle Path": {
+                            "type": "and",
+                            "data": {
+                                "comment": null,
+                                "items": [
+                                    {
+                                        "type": "template",
+                                        "data": "Can SSC"
+                                    },
+                                    {
+                                        "type": "resource",
+                                        "data": {
+                                            "type": "tricks",
+                                            "name": "ADC",
+                                            "amount": 3,
+                                            "negate": false
+                                        }
+                                    }
+                                ]
+                            }
                         }
                     }
+                },
+                "Dock to EMMI Zone Exit West": {
+                    "node_type": "dock",
+                    "heal": false,
+                    "coordinates": {
+                        "x": -8539.36,
+                        "y": 4014.01,
+                        "z": 0.0
+                    },
+                    "description": "",
+                    "layers": [
+                        "default"
+                    ],
+                    "extra": {},
+                    "valid_starting_location": false,
+                    "dock_type": "other",
+                    "default_connection": {
+                        "region": "Ghavoran",
+                        "area": "EMMI Zone Exit West",
+                        "node": "Dock from Central Unit"
+                    },
+                    "default_dock_weakness": "Open Passage",
+                    "exclude_from_dock_rando": false,
+                    "incompatible_dock_weaknesses": [],
+                    "override_default_open_requirement": null,
+                    "override_default_lock_requirement": null,
+                    "connections": {}
+                },
+                "Dock to EMMI Zone Middle Path": {
+                    "node_type": "dock",
+                    "heal": false,
+                    "coordinates": {
+                        "x": -7384.54,
+                        "y": 4008.93,
+                        "z": 0.0
+                    },
+                    "description": "",
+                    "layers": [
+                        "default"
+                    ],
+                    "extra": {},
+                    "valid_starting_location": false,
+                    "dock_type": "other",
+                    "default_connection": {
+                        "region": "Ghavoran",
+                        "area": "EMMI Zone Middle Path",
+                        "node": "Dock from Central Unit"
+                    },
+                    "default_dock_weakness": "Open Passage",
+                    "exclude_from_dock_rando": false,
+                    "incompatible_dock_weaknesses": [],
+                    "override_default_open_requirement": null,
+                    "override_default_lock_requirement": null,
+                    "connections": {}
                 }
             }
         },
@@ -6380,6 +6511,41 @@
                     "override_default_lock_requirement": null,
                     "connections": {
                         "Door to EMMI Zone Exit West (Grapple)": {
+                            "type": "and",
+                            "data": {
+                                "comment": null,
+                                "items": []
+                            }
+                        }
+                    }
+                },
+                "Dock from Central Unit": {
+                    "node_type": "dock",
+                    "heal": false,
+                    "coordinates": {
+                        "x": -7583.7,
+                        "y": 4016.03,
+                        "z": 0.0
+                    },
+                    "description": "",
+                    "layers": [
+                        "default"
+                    ],
+                    "extra": {},
+                    "valid_starting_location": false,
+                    "dock_type": "other",
+                    "default_connection": {
+                        "region": "Ghavoran",
+                        "area": "Central Unit",
+                        "node": "Dock to EMMI Zone Middle Path"
+                    },
+                    "default_dock_weakness": "Blocked Passage",
+                    "exclude_from_dock_rando": false,
+                    "incompatible_dock_weaknesses": [],
+                    "override_default_open_requirement": null,
+                    "override_default_lock_requirement": null,
+                    "connections": {
+                        "Door to EMMI Zone Exit West (Power)": {
                             "type": "and",
                             "data": {
                                 "comment": null,
@@ -7389,6 +7555,27 @@
                     "override_default_open_requirement": null,
                     "override_default_lock_requirement": null,
                     "connections": {
+                        "Door to EMMI Zone Middle Path": {
+                            "type": "and",
+                            "data": {
+                                "comment": null,
+                                "items": [
+                                    {
+                                        "type": "template",
+                                        "data": "Can SSC"
+                                    },
+                                    {
+                                        "type": "resource",
+                                        "data": {
+                                            "type": "tricks",
+                                            "name": "ADC",
+                                            "amount": 3,
+                                            "negate": false
+                                        }
+                                    }
+                                ]
+                            }
+                        },
                         "Dock to Spin Boost Tower (Upper)": {
                             "type": "and",
                             "data": {

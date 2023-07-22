@@ -977,6 +977,12 @@ Extra - asset_id: collision_camera_014
   > Tunnel to EMMI Zone Middle Path
       Trivial
 
+> Dock from Central Unit; Heals? False
+  * Layers: default
+  * Blocked Passage to Central Unit/Dock to EMMI Zone Exit West
+  > Door to EMMI Zone Middle Path (Power)
+      Trivial
+
 ----------------
 Early Ice Room
 Extra - total_boundings: {'x1': -12000.0, 'x2': -9900.0, 'y1': 2200.0, 'y2': 6400.0}
@@ -1077,6 +1083,18 @@ Extra - asset_id: collision_camera_017
   * Event Ghavoran - Central Unit
   > Dock to Central Unit Access
       Trivial
+  > Dock to EMMI Zone Exit West
+      Aim Down Clip (Advanced) and Can SSC
+  > Dock to EMMI Zone Middle Path
+      Aim Down Clip (Advanced) and Can SSC
+
+> Dock to EMMI Zone Exit West; Heals? False
+  * Layers: default
+  * Open Passage to EMMI Zone Exit West/Dock from Central Unit
+
+> Dock to EMMI Zone Middle Path; Heals? False
+  * Layers: default
+  * Open Passage to EMMI Zone Middle Path/Dock from Central Unit
 
 ----------------
 EMMI Zone Middle Path
@@ -1127,6 +1145,12 @@ Extra - asset_id: collision_camera_018
   * Layers: default
   * Ghavoran EMMI Tunnel to EMMI Zone Exit West/Tunnel to EMMI Zone Middle Path
   > Door to EMMI Zone Exit West (Grapple)
+      Trivial
+
+> Dock from Central Unit; Heals? False
+  * Layers: default
+  * Blocked Passage to Central Unit/Dock to EMMI Zone Middle Path
+  > Door to EMMI Zone Exit West (Power)
       Trivial
 
 ----------------
@@ -1296,6 +1320,8 @@ Extra - asset_id: collision_camera_020
   * Extra - left_shield_def: None
   * Extra - right_shield_entity: {EMPTY}
   * Extra - right_shield_def: None
+  > Door to EMMI Zone Middle Path
+      Aim Down Clip (Advanced) and Can SSC
   > Dock to Spin Boost Tower (Upper)
       After Ghavoran - Central Unit and Can Slide
   > Door to Central Unit Access (Upper)
