@@ -121,7 +121,21 @@
           <property name="title">
            <string>Bosses</string>
           </property>
-          <layout class="QVBoxLayout" name="raven_beak_damage_table_handling_layout">
+          <layout class="QVBoxLayout" name="bosses_group_layout">
+           <item>
+            <widget class="QCheckBox" name="skip_final_boss_check">
+             <property name="text">
+              <string>Skip Raven Beak fight and go directly to credits when taking the final elevator in Itorash.</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="Line" name="bosses_line_1">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
            <item>
             <widget class="QCheckBox" name="raven_beak_damage_table_handling_check">
              <property name="text">

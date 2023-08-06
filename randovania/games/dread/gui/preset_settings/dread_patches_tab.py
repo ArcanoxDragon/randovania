@@ -18,6 +18,7 @@ if typing.TYPE_CHECKING:
 _FIELDS = [
     "hanubia_shortcut_no_grapple",
     "hanubia_easier_path_to_itorash",
+    "skip_final_boss",
     "x_starts_released",
 ]
 
@@ -52,6 +53,9 @@ class PresetDreadPatches(PresetTab, Ui_PresetDreadPatches):
 
         signal_handling.on_checked(check, persist)
 
+    def _on_skip_final_boss_changed(self, value: bool):
+        self.raven_beak_damage_table_handling_check.setEnabled(not value)
+
     def _on_raven_beak_damage_table_handling_changed(self, value: bool):
         checked_value = (
             DreadRavenBeakDamageMode.UNMODIFIED
@@ -70,6 +74,7 @@ class PresetDreadPatches(PresetTab, Ui_PresetDreadPatches):
         for f in _FIELDS:
             typing.cast(QtWidgets.QCheckBox, getattr(self, f"{f}_check")).setChecked(getattr(config, f))
 
+        self.raven_beak_damage_table_handling_check.setEnabled(not config.skip_final_boss)
         self._orig_rb_damage_mode = config.raven_beak_damage_table_handling
         self.raven_beak_damage_table_handling_check.setChecked(
             not config.raven_beak_damage_table_handling.is_default)

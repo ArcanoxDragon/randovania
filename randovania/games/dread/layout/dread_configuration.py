@@ -54,6 +54,7 @@ class DreadConfiguration(BaseConfiguration):
     raven_beak_damage_table_handling: DreadRavenBeakDamageMode
     allow_highly_dangerous_logic: bool
     april_fools_hints: bool
+    skip_final_boss: bool
     artifacts: DreadArtifactConfig
     constant_heat_damage: int | None = dataclasses.field(metadata={"min": 0, "max": 1000, "precision": 1})
     constant_cold_damage: int | None = dataclasses.field(metadata={"min": 0, "max": 1000, "precision": 1})

@@ -100,6 +100,7 @@ class DreadPresetDescriber(GamePresetDescriber):
                     "Easier Path to Itorash in Hanubia": configuration.hanubia_easier_path_to_itorash
                 },
                 {
+                    "Skip Raven Beak Fight": configuration.skip_final_boss,
                     f"Raven Beak Damage: {configuration.raven_beak_damage_table_handling.long_name}":
                         not configuration.raven_beak_damage_table_handling.is_default,
                 },

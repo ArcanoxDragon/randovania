@@ -4093,7 +4093,8 @@
         "raven_beak_damage_table_handling": "unmodified",
         "remove_grapple_blocks_hanubia_shortcut": true,
         "remove_grapple_block_path_to_itorash": false,
-        "default_x_released": true
+        "default_x_released": true,
+        "skip_raven_beak": true
     },
     "show_shields_on_minimap": false,
     "door_patches": [

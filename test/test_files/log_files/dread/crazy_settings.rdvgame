@@ -10,7 +10,7 @@
         "word_hash": "Autclast Sharpaw Slidle",
         "presets": [
             {
-                "schema_version": 51,
+                "schema_version": 62,
                 "base_preset_uuid": null,
                 "name": "Crazy Settings",
                 "uuid": "043c3623-2a8b-4a37-84bf-e8fc7d457525",
@@ -47,144 +47,144 @@
                     },
                     "starting_location": [
                         {
-                            "world_name": "Artaria",
-                            "area_name": "Save Station East",
-                            "node_name": "Save Station"
+                            "region": "Artaria",
+                            "area": "Save Station East",
+                            "node": "Save Station"
                         },
                         {
-                            "world_name": "Artaria",
-                            "area_name": "Save Station North",
-                            "node_name": "Save Station"
+                            "region": "Artaria",
+                            "area": "Save Station North",
+                            "node": "Save Station"
                         },
                         {
-                            "world_name": "Artaria",
-                            "area_name": "Save Station West",
-                            "node_name": "Save Station"
+                            "region": "Artaria",
+                            "area": "Save Station West",
+                            "node": "Save Station"
                         },
                         {
-                            "world_name": "Burenia",
-                            "area_name": "Map Station",
-                            "node_name": "Save Station"
+                            "region": "Burenia",
+                            "area": "Map Station",
+                            "node": "Save Station"
                         },
                         {
-                            "world_name": "Burenia",
-                            "area_name": "Navigation Station North",
-                            "node_name": "Save Station"
+                            "region": "Burenia",
+                            "area": "Navigation Station North",
+                            "node": "Save Station"
                         },
                         {
-                            "world_name": "Burenia",
-                            "area_name": "Navigation Station South",
-                            "node_name": "Save Station"
+                            "region": "Burenia",
+                            "area": "Navigation Station South",
+                            "node": "Save Station"
                         },
                         {
-                            "world_name": "Burenia",
-                            "area_name": "Save Station Middle",
-                            "node_name": "Save Station"
+                            "region": "Burenia",
+                            "area": "Save Station Middle",
+                            "node": "Save Station"
                         },
                         {
-                            "world_name": "Burenia",
-                            "area_name": "Save Station North",
-                            "node_name": "Save Station"
+                            "region": "Burenia",
+                            "area": "Save Station North",
+                            "node": "Save Station"
                         },
                         {
-                            "world_name": "Burenia",
-                            "area_name": "Save Station South",
-                            "node_name": "Save Station"
+                            "region": "Burenia",
+                            "area": "Save Station South",
+                            "node": "Save Station"
                         },
                         {
-                            "world_name": "Cataris",
-                            "area_name": "Map Station",
-                            "node_name": "Save Station"
+                            "region": "Cataris",
+                            "area": "Map Station",
+                            "node": "Save Station"
                         },
                         {
-                            "world_name": "Cataris",
-                            "area_name": "Navigation Station Northwest",
-                            "node_name": "Save Station"
+                            "region": "Cataris",
+                            "area": "Navigation Station Northwest",
+                            "node": "Save Station"
                         },
                         {
-                            "world_name": "Cataris",
-                            "area_name": "Navigation Station Southeast",
-                            "node_name": "Save Station"
+                            "region": "Cataris",
+                            "area": "Navigation Station Southeast",
+                            "node": "Save Station"
                         },
                         {
-                            "world_name": "Cataris",
-                            "area_name": "Save Station East",
-                            "node_name": "Save Station"
+                            "region": "Cataris",
+                            "area": "Save Station East",
+                            "node": "Save Station"
                         },
                         {
-                            "world_name": "Cataris",
-                            "area_name": "Save Station West",
-                            "node_name": "Save Station"
+                            "region": "Cataris",
+                            "area": "Save Station West",
+                            "node": "Save Station"
                         },
                         {
-                            "world_name": "Dairon",
-                            "area_name": "Map Station",
-                            "node_name": "Save Station"
+                            "region": "Dairon",
+                            "area": "Map Station",
+                            "node": "Save Station"
                         },
                         {
-                            "world_name": "Dairon",
-                            "area_name": "Navigation Station North",
-                            "node_name": "Save Station"
+                            "region": "Dairon",
+                            "area": "Navigation Station North",
+                            "node": "Save Station"
                         },
                         {
-                            "world_name": "Dairon",
-                            "area_name": "Navigation Station South",
-                            "node_name": "Save Station"
+                            "region": "Dairon",
+                            "area": "Navigation Station South",
+                            "node": "Save Station"
                         },
                         {
-                            "world_name": "Dairon",
-                            "area_name": "Save Station East",
-                            "node_name": "Save Station"
+                            "region": "Dairon",
+                            "area": "Save Station East",
+                            "node": "Save Station"
                         },
                         {
-                            "world_name": "Dairon",
-                            "area_name": "Save Station West",
-                            "node_name": "Save Station"
+                            "region": "Dairon",
+                            "area": "Save Station West",
+                            "node": "Save Station"
                         },
                         {
-                            "world_name": "Ferenia",
-                            "area_name": "Map Station",
-                            "node_name": "Save Station"
+                            "region": "Ferenia",
+                            "area": "Map Station",
+                            "node": "Save Station"
                         },
                         {
-                            "world_name": "Ferenia",
-                            "area_name": "Navigation Station",
-                            "node_name": "Save Station"
+                            "region": "Ferenia",
+                            "area": "Navigation Station",
+                            "node": "Save Station"
                         },
                         {
-                            "world_name": "Ferenia",
-                            "area_name": "Save Station North",
-                            "node_name": "Save Station"
+                            "region": "Ferenia",
+                            "area": "Save Station North",
+                            "node": "Save Station"
                         },
                         {
-                            "world_name": "Ferenia",
-                            "area_name": "Save Station Southeast",
-                            "node_name": "Save Station"
+                            "region": "Ferenia",
+                            "area": "Save Station Southeast",
+                            "node": "Save Station"
                         },
                         {
-                            "world_name": "Ghavoran",
-                            "area_name": "Map Station",
-                            "node_name": "Save Station"
+                            "region": "Ghavoran",
+                            "area": "Map Station",
+                            "node": "Save Station"
                         },
                         {
-                            "world_name": "Ghavoran",
-                            "area_name": "Navigation Station",
-                            "node_name": "Save Station"
+                            "region": "Ghavoran",
+                            "area": "Navigation Station",
+                            "node": "Save Station"
                         },
                         {
-                            "world_name": "Ghavoran",
-                            "area_name": "Save Station Center",
-                            "node_name": "Save Station"
+                            "region": "Ghavoran",
+                            "area": "Save Station Center",
+                            "node": "Save Station"
                         },
                         {
-                            "world_name": "Ghavoran",
-                            "area_name": "Save Station East",
-                            "node_name": "Save Station"
+                            "region": "Ghavoran",
+                            "area": "Save Station East",
+                            "node": "Save Station"
                         },
                         {
-                            "world_name": "Hanubia",
-                            "area_name": "Navigation Station",
-                            "node_name": "Save Station"
+                            "region": "Hanubia",
+                            "area": "Navigation Station",
+                            "node": "Save Station"
                         }
                     ],
                     "available_locations": {
@@ -330,7 +330,7 @@
                     "minimum_available_locations_for_hint_placement": 0,
                     "minimum_location_weight_for_hint_placement": 0.0,
                     "dock_rando": {
-                        "mode": "two-way",
+                        "mode": "docks",
                         "types_state": {
                             "door": {
                                 "can_change_from": [
@@ -357,32 +357,18 @@
                                     "Wave Beam Door",
                                     "Wide Beam Door"
                                 ]
-                            },
-                            "tunnel": {
-                                "can_change_from": [],
-                                "can_change_to": []
-                            },
-                            "other": {
-                                "can_change_from": [],
-                                "can_change_to": []
                             }
                         }
                     },
                     "single_set_for_pickups_that_solve": true,
                     "staggered_multi_pickup_placement": true,
-                    "elevators": {
-                        "mode": "vanilla",
-                        "excluded_teleporters": [],
-                        "excluded_targets": [],
-                        "skip_final_bosses": false,
-                        "allow_unvisited_room_names": true
-                    },
                     "energy_per_tank": 100,
                     "immediate_energy_parts": true,
                     "hanubia_shortcut_no_grapple": true,
                     "hanubia_easier_path_to_itorash": false,
                     "x_starts_released": true,
                     "raven_beak_damage_table_handling": "unmodified",
+                    "skip_final_boss": true,
                     "allow_highly_dangerous_logic": false,
                     "april_fools_hints": false,
                     "artifacts": {
@@ -392,7 +378,8 @@
                     },
                     "constant_heat_damage": 20,
                     "constant_cold_damage": null,
-                    "constant_lava_damage": null
+                    "constant_lava_damage": null,
+                    "check_if_beatable_after_base_patches": false
                 }
             }
         ]
