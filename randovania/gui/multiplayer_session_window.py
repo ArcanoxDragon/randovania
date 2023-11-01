@@ -664,19 +664,9 @@ class MultiplayerSessionWindow(QtWidgets.QMainWindow, Ui_MultiplayerSessionWindo
             "You might be required to do Dark Aether or heated Magmoor Cavern checks with very low energy.",
         )
 
-        permalink = Permalink.from_parameters(
-            GeneratorParameters(
-                seed_number=random.randint(0, 2**31),
-                spoiler=spoiler,
-                presets=[VersionedPreset.from_str(world.preset_raw).get_preset() for world in self._session.worlds],
-            )
-        )
-        return await self.generate_game_with_permalink(permalink, retries=retries)
+        return await self.generate_game_with_permalink(spoiler, retries=retries)
 
-    async def generate_game_with_permalink(self, permalink: Permalink, retries: int | None):
-        if not await self._check_dangerous_presets(permalink):
-            return
-
+    async def generate_game_with_permalink(self, spoiler: bool, retries: int | None):
         if self.has_background_process:
             return async_dialog.warning(
                 self,
@@ -684,15 +674,37 @@ class MultiplayerSessionWindow(QtWidgets.QMainWindow, Ui_MultiplayerSessionWindo
                 "Unable to generate a game right now, another background process is already in progress.",
             )
 
-        def generate_layout(progress_update: ProgressUpdateCallable):
-            return generator_frontend.generate_layout(
-                progress_update=progress_update, parameters=permalink.parameters, options=self._options, retries=retries
+        async def wrap_generate_layout(game: int):
+            permalink = Permalink.from_parameters(
+                GeneratorParameters(
+                    seed_number=random.randint(0, 2**31),
+                    spoiler=spoiler,
+                    presets=[VersionedPreset.from_str(world.preset_raw).get_preset() for world in self._session.worlds],
+                )
             )
+
+            def generate_layout(progress_update: ProgressUpdateCallable):
+                return generator_frontend.generate_layout(
+                    progress_update=progress_update, parameters=permalink.parameters, options=self._options, retries=retries
+                )
+
+            return await self.run_in_background_async(generate_layout, f"Creating game {game}...")
 
         async with self.game_session_api.prepare_to_upload_layout(self._get_world_order()) as uploader:
             self._generating_game = True
             try:
-                layout = await self.run_in_background_async(generate_layout, "Creating a game...")
+                tasks = [asyncio.create_task(wrap_generate_layout(i)) for i in range(1, 9)]
+                finished, pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+                layout = None
+
+                for t in pending:
+                    t.cancel()
+
+                for t in finished:
+                    if layout is None:
+                        layout = await t
+                    else:
+                        await t
 
                 last_multiplayer = self._options.data_dir.joinpath(f"last_multiplayer_{self._session.id}.rdvgame")
                 if layout.has_spoiler:

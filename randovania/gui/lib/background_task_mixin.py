@@ -18,15 +18,18 @@ class BackgroundTaskMixin:
     progress_update_signal = Signal(str, int)
     background_tasks_button_lock_signal = Signal(bool)
     abort_background_task_requested: bool = False
-    _background_thread: threading.Thread | None = None
+    _background_threads: list[threading.Thread] = list()
 
     def _start_thread_for(self, target):
         randovania.games.prime2.patcher.csharp_subprocess.IO_LOOP = asyncio.get_event_loop()
-        self._background_thread = threading.Thread(target=target, name=f"BackgroundThread for {self}")
-        self._background_thread.start()
+        background_thread = threading.Thread(target=target, name=f"BackgroundThread for {self}")
+        self._background_threads.append(background_thread)
+        background_thread.start()
+        return background_thread
 
     def run_in_background_thread(self, target, starting_message: str):
         last_progress = 0.0
+        background_thread = None
 
         def progress_update(message: str, progress: float | None):
             nonlocal last_progress
@@ -47,16 +50,13 @@ class BackgroundTaskMixin:
             except AbortBackgroundTask:
                 pass
             finally:
-                self._background_thread = None
+                self._background_threads.remove(background_thread)
                 self.background_tasks_button_lock_signal.emit(True)
-
-        if self._background_thread:
-            raise BackgroundTaskInProgressError("Trying to start a new background thread while one exists already.")
 
         self.abort_background_task_requested = False
         progress_update(starting_message, 0)
 
-        self._start_thread_for(thread)
+        background_thread = self._start_thread_for(thread)
         self.background_tasks_button_lock_signal.emit(False)
 
     async def run_in_background_async(self, target, starting_message: str):
@@ -79,7 +79,7 @@ class BackgroundTaskMixin:
 
     @property
     def has_background_process(self) -> bool:
-        return self._background_thread is not None
+        return len(self._background_threads) > 0
 
 
 class AbortBackgroundTask(Exception):
