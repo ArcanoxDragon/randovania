@@ -9,15 +9,16 @@ import aiofiles
 if TYPE_CHECKING:
     from collections.abc import Hashable
     from pathlib import Path
-    from typing import Any, TypeAlias
+    from typing import Any
 
-_JsonPrimitive: TypeAlias = str | int | float | bool | None
+type _JsonPrimitive = str | int | float | bool | None
 
-_JsonType_RO: TypeAlias = Mapping[str, "_JsonType_RO"] | Sequence["_JsonType_RO"] | _JsonPrimitive
+type JsonObject_RO = Mapping[str, "JsonType_RO"]
+type JsonType_RO = JsonObject_RO | Sequence["JsonType_RO"] | _JsonPrimitive
 """Covariant type alias useful when accepting read-only input."""
 
-JsonObject: TypeAlias = dict[str, "JsonType"]
-JsonType: TypeAlias = JsonObject | list["JsonType"] | _JsonPrimitive
+type JsonObject = dict[str, "JsonType"]
+type JsonType = JsonObject | list["JsonType"] | _JsonPrimitive
 """Invariant and mutable type alias. Use `typing.cast()` or a type guard if more specificity is needed."""
 
 
@@ -42,12 +43,12 @@ def read_dict(path: Path) -> JsonObject:
     return cast("JsonObject", result)
 
 
-def write_path(path: Path, data: _JsonType_RO) -> None:
+def write_path(path: Path, data: JsonType_RO) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(encode(data))
 
 
-def encode(data: _JsonType_RO) -> str:
+def encode(data: JsonType_RO) -> str:
     return json.dumps(data, indent=4, separators=(",", ": "))
 
 
@@ -58,5 +59,5 @@ async def read_path_async(path: Path, *, raise_on_duplicate_keys: bool = False) 
         )
 
 
-def dumps_small(obj: _JsonType_RO) -> str:
+def dumps_small(obj: JsonType_RO) -> str:
     return json.dumps(obj, separators=(",", ":"))

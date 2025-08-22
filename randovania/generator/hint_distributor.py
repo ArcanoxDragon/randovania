@@ -64,23 +64,39 @@ class FeatureChooser[PrecisionT: Enum]:
         self.elements_with_feature = elements_with_feature
         self.detailed_precision = detailed_precision
 
+    def _calculate_feature_precision(self, feature: HintFeature | PrecisionT) -> float:
+        """
+        This function essentially asks: what proportion of the pool can be eliminated using a given Feature?
+        100% means that all but one element can be eliminated.
+        0% means that no elements can be eliminated.
+
+        In the degenerate case of a pool with only one element, returns 100%.
+        """
+
+        if self.total_elements == 1:
+            return 1.0
+
+        eliminated_elements = self.total_elements - len(self.elements_with_feature[feature])
+        elimination_candidates = self.total_elements - 1
+
+        proportion_eliminated = eliminated_elements / elimination_candidates
+
+        # arbitrarily increased until it felt good
+        DEGREE = 3
+        return math.pow(proportion_eliminated, DEGREE)
+
     def feature_precisions(self) -> dict[HintFeature | PrecisionT, float]:
         """
         Determine the precision of all provided Features,
         as a percentage from `0.0` to `1.0`.
         """
 
-        # arbitrarily increased until it felt good
-        DEGREE = 3
         feature_precisions = {
-            feature: math.pow(
-                ((self.total_elements - len(self.elements_with_feature[feature])) / (self.total_elements - 1)), DEGREE
-            )
-            for feature in self.elements_with_feature
+            feature: self._calculate_feature_precision(feature) for feature in self.elements_with_feature
         }
 
         if self.detailed_precision is not None:
-            # set detailed precision to 1.0 if it isn't already set
+            # set detailed precision to 1.0 if it wasn't calculated in the previous step
             feature_precisions.setdefault(self.detailed_precision, 1.0)
 
         feature_precisions = {
@@ -187,7 +203,7 @@ class HintDistributor(ABC):
     def get_generic_hint_nodes(self, prefill: PreFillParams) -> list[NodeIdentifier]:
         return [
             node.identifier
-            for node in prefill.game.region_list.iterate_nodes_of_type(HintNode)
+            for _, _, node in prefill.game.iterate_nodes_of_type(HintNode)
             if node.kind == HintNodeKind.GENERIC
         ]
 
@@ -198,8 +214,7 @@ class HintDistributor(ABC):
     async def assign_specific_location_hints(self, patches: GamePatches, prefill: PreFillParams) -> GamePatches:
         specific_location_precisions = await self.get_specific_pickup_precision_pairs()
 
-        wl = prefill.game.region_list
-        for node in wl.iterate_nodes_of_type(HintNode):
+        for _, _, node in prefill.game.iterate_nodes_of_type(HintNode):
             if node.kind == HintNodeKind.SPECIFIC_LOCATION:
                 identifier = node.identifier
                 patches = patches.assign_hint(
@@ -207,7 +222,9 @@ class HintDistributor(ABC):
                     LocationHint(
                         specific_location_precisions[identifier],
                         PickupIndex(node.extra["hint_index"]),
-                    ),
+                    )
+                    if patches.configuration.hints.enable_specific_location_hints
+                    else JokeHint(),
                 )
 
         return patches
